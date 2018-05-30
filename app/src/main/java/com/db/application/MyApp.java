@@ -2,6 +2,7 @@ package com.db.application;
 
 import android.app.Application;
 
+import com.db.table.Saff;
 import com.db.table.User;
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.global.DbConfig;
@@ -13,15 +14,15 @@ import com.xbbdb.global.DbConfig;
 
 public class MyApp extends Application {
 
-    private Class<?>[] clazz={User.class};
+    private Class<?>[] clazz = {User.class, Saff.class};
 
     @Override
     public void onCreate() {
         super.onCreate();
-        DbConfig config=new DbConfig();
+        DbConfig config = new DbConfig();
         config.setContext(getApplicationContext())
-        .setDBNAME("xbb").setDBVERSION(1)
-        .setClazz(clazz);
+                .setDBNAME("xbb").setDBVERSION(13)
+                .setClazz(clazz);
         DbFactory.init(config);
     }
 }

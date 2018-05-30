@@ -69,6 +69,7 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
+        DbFactory.getInstance().onCreateWriteDatabase(db);
         TableHelper.createTablesByClasses(db, this.modelClasses);
     }
 
@@ -81,31 +82,25 @@ public class DBHelper extends SQLiteOpenHelper {
      *                   int, int)
      */
     @Override
-    public void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                LogUtil.i(TAG, "DbFactory: onUpgrade: [uuuuuuu]="
-                        + "  oldVersion=" + oldVersion + "  newVersion" + newVersion);
-                try {
-                    Map<String, Class<?>> hashMap = new HashMap<>();
-                    for (Class<?> clazz : modelClasses) {
-                        String tableNeame = getTableNeame(clazz);
-                        hashMap.put(tableNeame, clazz);
-                    }
-                    DbFactory.getInstance().openDb();
-                    List<String> olderTables = saveOldTables(db, modelClasses, hashMap);
-                    onCreate(db);
-//                    LogUtil.i( TAG, "DbFactory: onUpgrade: [sssssss1]="
-//                            + "成功了  " + olderTables);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    DbFactory.getInstance().closeDatabase();
-                }
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        LogUtil.e(TAG, "DbFactory: onUpgrade: [uuuuuuu]="
+                + "  oldVersion=" + oldVersion + "  newVersion" + newVersion);
+        try {
+            Map<String, Class<?>> hashMap = new HashMap<>();
+            for (Class<?> clazz : modelClasses) {
+                String tableNeame = getTableNeame(clazz);
+                hashMap.put(tableNeame, clazz);
             }
-        }).start();
-
+            DbFactory.getInstance().onCreateWriteDatabase(db);
+            DbFactory.getInstance().openWriteDatabase();
+            saveOldTables(db, modelClasses, hashMap);
+            onCreate(db);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            DbFactory.getInstance().closeWriteDatabase();
+        }
+        Log.i("DBHelper", "onUpgradeuuuuuuu888888= ");
     }
 
     private String getTableNeame(Class<?> daoClasses) {

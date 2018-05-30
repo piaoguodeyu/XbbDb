@@ -23,6 +23,7 @@ import com.xbbdb.orm.annotation.Column;
 import com.xbbdb.orm.annotation.Id;
 import com.xbbdb.orm.annotation.RelationDao;
 import com.xbbdb.orm.annotation.Table;
+import com.xbbdb.orm.helper.DbModel;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -119,8 +120,8 @@ public class TableHelper {
 		String sql = sb.toString();
 
 		Log.d(TAG, "crate table [" + tableName + "]: " + sql);
-
-		db.execSQL(sql);
+		DbModel model=new DbModel(null);
+		model.execSql(sql,null);
 	}
 
 	/**

@@ -15,6 +15,8 @@
  */
 package com.xbbdb.orm.helper;
 
+import android.database.sqlite.SQLiteDatabase;
+
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.TableHelper;
 import com.xbbdb.orm.annotation.Column;
@@ -89,9 +91,10 @@ public class DBImpl<T> {
     public DBImpl(Class<T> clazz) {
         this.mSQLiteOpenHelper = DbFactory.getInstance();
         if (clazz == null) {
-            this.clazz = ((Class<T>) ((ParameterizedType) super
-                    .getClass().getGenericSuperclass())
-                    .getActualTypeArguments()[0]);
+//            this.clazz = ((Class<T>) ((ParameterizedType) super
+//                    .getClass().getGenericSuperclass())
+//                    .getActualTypeArguments()[0]);
+            return;
         } else {
             this.clazz = clazz;
         }
@@ -267,9 +270,9 @@ public class DBImpl<T> {
     public void execSqlAbs(String sql, Object[] selectionArgs) {
         try {
             if (selectionArgs == null) {
-                mSQLiteOpenHelper.getDatabase().execSQL(sql);
+                mSQLiteOpenHelper.getWriteDatabase().execSQL(sql);
             } else {
-                mSQLiteOpenHelper.getDatabase().execSQL(sql, selectionArgs);
+                mSQLiteOpenHelper.getWriteDatabase().execSQL(sql, selectionArgs);
             }
             LogUtil.d(TAG, "[execSql]: success" + getLogSql(sql, selectionArgs));
         } catch (Exception e) {
@@ -277,69 +280,6 @@ public class DBImpl<T> {
             e.printStackTrace();
         } finally {
         }
-    }
-
-    /**
-     * 描述：获取写数据库，数据操作前必须调用
-     *
-     * @param transaction 是否开启事务
-     * @throws
-     */
-    protected void startWritableDatabase(boolean transaction) {
-        try {
-            mSQLiteOpenHelper.openDb();
-        } catch (Exception e) {
-            e.printStackTrace();
-            LogUtil.i(TAG, "DBImpl: startWritableDatabase: [transaction]="
-                    + e);
-        } finally {
-        }
-
-    }
-
-    /**
-     * 描述：获取读数据库，数据操作前必须调用
-     *
-     * @param transaction 是否开启事务
-     * @throws
-     */
-    protected synchronized void startReadableDatabase(boolean transaction) {
-        try {
-            mSQLiteOpenHelper.openDb();
-        } catch (Exception e) {
-            e.printStackTrace();
-            LogUtil.i(TAG, "DBImpl: startReadableDatabase: [transaction]="
-                    + e);
-        }
-
-    }
-
-
-    /**
-     * 描述：操作完成后设置事务成功后才能调用closeDatabase(true);
-     *
-     * @throws
-     */
-    protected void setTransactionSuccessful() {
-//        try {
-//            if (mSQLiteDatabase != null) {
-//                mSQLiteDatabase.setTransactionSuccessful();
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            LogUtil.i( TAG, "DBImpl: setTransactionSuccessful: []="
-//                    + e);
-//        }
-    }
-
-    /**
-     * 描述：关闭数据库，数据操作后必须调用
-     *
-     * @param transaction 关闭事务
-     * @throws
-     */
-    protected void closeDatabase(boolean transaction) {
-        mSQLiteOpenHelper.closeDatabase();
     }
 
 
@@ -496,4 +436,92 @@ public class DBImpl<T> {
     protected List<T> queryRawAbs(String sql, String[] selectionArgs) {
         return new SqlQuery(this.clazz, this.allFields, this.mTableName, this.idColumn).queryRawAbs(sql, selectionArgs, this.clazz);
     }
+
+    public void closeReadDatabase() {
+        mSQLiteOpenHelper.closeReadDatabase();
+    }
+
+    /**
+     * 打开写事务
+     */
+    public void openWriteTransaction() {
+        SQLiteDatabase database = DbFactory.getInstance().getWriteDatabase();
+        try {
+            if (database != null) {
+                database.beginTransaction();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtil.i(TAG, "DBImpl: setWriteTransactionSuccessful: []="
+                    + e);
+        }
+    }
+
+
+    /**
+     * 描述：获取写数据库，数据操作前必须调用
+     *
+     * @throws
+     */
+    protected void startWritableDatabase() {
+        try {
+            mSQLiteOpenHelper.openWriteDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtil.i(TAG, "DBImpl: startWritableDatabase: [transaction]="
+                    + e);
+        } finally {
+        }
+
+    }
+
+    /**
+     * 描述：获取读数据库，数据操作前必须调用
+     *
+     * @throws
+     */
+    protected synchronized void startReadableDatabase() {
+        try {
+            mSQLiteOpenHelper.openReadDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtil.i(TAG, "DBImpl: startReadableDatabase: [transaction]="
+                    + e);
+        }
+
+    }
+
+
+    /**
+     * 描述：操作完成后设置事务成功后才能调用closeDatabase(true);
+     *
+     * @throws
+     */
+    protected void setWriteTransactionSuccessful() {
+        SQLiteDatabase database = DbFactory.getInstance().getWriteDatabase();
+        try {
+            if (database != null) {
+                database.setTransactionSuccessful();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtil.i(TAG, "DBImpl: setWriteTransactionSuccessful: []="
+                    + e);
+        } finally {
+            if (database != null) {
+                database.endTransaction();
+            }
+        }
+    }
+
+    /**
+     * 描述：关闭数据库，数据操作后必须调用
+     *
+     * @throws
+     */
+    protected void closeWriteDatabase() {
+        mSQLiteOpenHelper.closeWriteDatabase();
+    }
+
+
 }

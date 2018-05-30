@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by zhangxiaowei on 16/11/18.
@@ -29,10 +28,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class SqlQuery<T> {
     private final String TAG = SqlQuery.class.getSimpleName();
-    /**
-     * 锁对象
-     */
-    private final ReentrantLock lock = new ReentrantLock();
     /**
      * The table name.
      */
@@ -69,16 +64,14 @@ public class SqlQuery<T> {
         Cursor cursor = null;
         int count = 0;
         try {
-            lock.lock();
             String sql = "select count(*) from " + this.mTableName;
-            SQLiteStatement statement = DbFactory.getInstance().getDatabase().compileStatement(sql);
+            SQLiteStatement statement = DbFactory.getInstance().openReadDatabase().compileStatement(sql);
             count = (int) statement.simpleQueryForLong();
         } catch (Exception e) {
             LogUtil.e(TAG, "[queryCount] from DB exception");
             e.printStackTrace();
         } finally {
             closeCursor(cursor);
-            lock.unlock();
         }
         return count;
     }
@@ -94,9 +87,8 @@ public class SqlQuery<T> {
         Cursor cursor = null;
         int count = 0;
         try {
-            lock.lock();
             LogUtil.d(TAG, "[queryCount]: " + getLogSql(sql, selectionArgs));
-            cursor = DbFactory.getInstance().getDatabase().query(this.mTableName, null, sql, selectionArgs, null, null, null);
+            cursor = DbFactory.getInstance().openReadDatabase().query(this.mTableName, null, sql, selectionArgs, null, null, null);
             if (cursor != null) {
                 count = cursor.getCount();
             }
@@ -105,7 +97,6 @@ public class SqlQuery<T> {
             e.printStackTrace();
         } finally {
             closeCursor(cursor);
-            lock.unlock();
         }
         return count;
     }
@@ -383,7 +374,7 @@ public class SqlQuery<T> {
             String tableName1 = getTableNeame(daoClasses);
             LogUtil.d(TAG, "[666666666] from " + tableName1 + " where " + where
                     + "(" + selectionArgs + ")" + " group by " + groupBy + " having " + having + " order by " + orderBy + " limit " + limit);
-            cursor = DbFactory.getInstance().getDatabase().query(tableName1, columns, where,
+            cursor = DbFactory.getInstance().openReadDatabase().query(tableName1, columns, where,
                     selectionArgs, groupBy, having, orderBy, limit);
             getListFromCursor(daoClasses, list, cursor);
             //获取关联域的操作类型和关系类型
@@ -393,7 +384,6 @@ public class SqlQuery<T> {
             e.printStackTrace();
         } finally {
             closeCursor(cursor);
-//            lock.unlock();
         }
 
         return list;
@@ -410,9 +400,8 @@ public class SqlQuery<T> {
         Cursor cursor = null;
         List<Map<String, String>> retList = new ArrayList<Map<String, String>>();
         try {
-            lock.lock();
             LogUtil.d(TAG, "[queryMapList]: " + getLogSql(sql, selectionArgs));
-            cursor = DbFactory.getInstance().getDatabase().rawQuery(sql, selectionArgs);
+            cursor = DbFactory.getInstance().openReadDatabase().rawQuery(sql, selectionArgs);
             while (cursor.moveToNext()) {
                 Map<String, String> map = new HashMap<String, String>();
                 for (String columnName : cursor.getColumnNames()) {
@@ -430,7 +419,6 @@ public class SqlQuery<T> {
             LogUtil.e(TAG, "[queryMapList] from DB exception");
         } finally {
             closeCursor(cursor);
-            lock.unlock();
         }
         return retList;
     }
@@ -442,19 +430,18 @@ public class SqlQuery<T> {
      * @return the t
      */
     public T queryOneAbs(int id) {
-        synchronized (lock) {
-            String selection = this.idColumn + " = ?";
-            String[] selectionArgs = {Integer.toString(id)};
-            LogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
-                    + this.idColumn + " = '" + id + "'");
-            List<Object> list = queryListAbs(this.clazz, null, selection, selectionArgs, null, null, null,
-                    null);
-            if ((list != null) && (list.size() > 0)) {
-                return (T) list.get(0);
-            }
-            return null;
+        String selection = this.idColumn + " = ?";
+        String[] selectionArgs = {Integer.toString(id)};
+        LogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
+                + this.idColumn + " = '" + id + "'");
+        List<Object> list = queryListAbs(this.clazz, null, selection, selectionArgs, null, null, null,
+                null);
+        if ((list != null) && (list.size() > 0)) {
+            return (T) list.get(0);
         }
+        return null;
     }
+
 
     /**
      * 关联表查询
@@ -485,18 +472,16 @@ public class SqlQuery<T> {
      * @return the t
      */
     public T queryOneAbs(String id) {
-        synchronized (lock) {
-            String selection = this.idColumn + " = ?";
-            String[] selectionArgs = {id};
-            LogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
-                    + this.idColumn + " = '" + id + "'");
-            List<T> list = (List<T>) queryListAbs(this.clazz, null, selection, selectionArgs, null, null, null,
-                    null);
-            if ((list != null) && (list.size() > 0)) {
-                return list.get(0);
-            }
-            return null;
+        String selection = this.idColumn + " = ?";
+        String[] selectionArgs = {id};
+        LogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
+                + this.idColumn + " = '" + id + "'");
+        List<T> list = (List<T>) queryListAbs(this.clazz, null, selection, selectionArgs, null, null, null,
+                null);
+        if ((list != null) && (list.size() > 0)) {
+            return list.get(0);
         }
+        return null;
     }
 
     /**
@@ -505,18 +490,16 @@ public class SqlQuery<T> {
      * @return
      */
     public T queryOneAbs(String column, String data) {
-        synchronized (lock) {
-            String selection = column + " = ?";
-            String[] selectionArgs = {data};
-            LogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
-                    + this.idColumn + " = '" + column + "'");
-            List<T> list = (List<T>) queryListAbs(this.clazz, null, selection, selectionArgs, null, null, null,
-                    null);
-            if ((list != null) && (list.size() > 0)) {
-                return list.get(0);
-            }
-            return null;
+        String selection = column + " = ?";
+        String[] selectionArgs = {data};
+        LogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
+                + this.idColumn + " = '" + column + "'");
+        List<T> list = (List<T>) queryListAbs(this.clazz, null, selection, selectionArgs, null, null, null,
+                null);
+        if ((list != null) && (list.size() > 0)) {
+            return list.get(0);
         }
+        return null;
     }
 
     /**
@@ -532,9 +515,8 @@ public class SqlQuery<T> {
         List<Object> list = new ArrayList<Object>();
         Cursor cursor = null;
         try {
-            lock.lock();
             LogUtil.d(TAG, "[queryRaw]: " + getLogSql(sql, selectionArgs));
-            cursor = DbFactory.getInstance().getDatabase().rawQuery(sql, selectionArgs);
+            cursor = DbFactory.getInstance().openReadDatabase().rawQuery(sql, selectionArgs);
             getListFromCursor(clazz, list, cursor);
             //获取关联域的操作类型和关系类型
             queryList(this.clazz, list);
@@ -543,7 +525,6 @@ public class SqlQuery<T> {
             e.printStackTrace();
         } finally {
             closeCursor(cursor);
-            lock.unlock();
         }
 
         return (List<T>) list;

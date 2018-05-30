@@ -144,7 +144,7 @@ public class SqlDelete<T> {
             LogUtil.d(TAG, "[delete]: delelte from " + tablename + " where "
                     + where.replace("?", id));
             List<Object> listdata = mSqlQuery.queryRelation(clazz, coloum, id);
-            rows = DbFactory.getInstance().getDatabase().delete(tablename, where, whereValue);
+            rows = DbFactory.getInstance().openWriteDatabase().delete(tablename, where, whereValue);
             if (listdata == null || listdata.size() == 0) {
                 return rows;
             }
@@ -360,7 +360,7 @@ public class SqlDelete<T> {
     private long deleteAllData(Class<?> clazz) {
         long rows = -1;
         String tablename = getTableNeame(clazz);
-        rows = DbFactory.getInstance().getDatabase().delete(tablename, null, null);
+        rows = DbFactory.getInstance().openWriteDatabase().delete(tablename, null, null);
         LogUtil.i(TAG, "DBImpl: deleteAll: [deleteAllData=]=" + tablename);
 
         for (Field relationsDaoField : getFiled(clazz)) {

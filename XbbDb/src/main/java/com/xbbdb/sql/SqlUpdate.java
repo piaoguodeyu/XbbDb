@@ -109,7 +109,7 @@ public class SqlUpdate<T> {
 
             String[] whereValue = {idValues};
 
-            rows = DbFactory.getInstance().getDatabase().update(tablename, cv, where, whereValue);
+            rows = DbFactory.getInstance().openWriteDatabase().update(tablename, cv, where, whereValue);
 
             //获取关联域的操作类型和关系类型
             String foreignKey = null;

@@ -130,7 +130,7 @@ public class SqlInsert<T> {
             String tablename = getTableNeame(entity.getClass());
             LogUtil.i(TAG, "DBImpl: insert: [*********"
                     + "[insert]: insert into " + tablename + " " + sql);
-            row = DbFactory.getInstance().getDatabase().insert(tablename, null, cv);
+            row = DbFactory.getInstance().openWriteDatabase().insert(tablename, null, cv);
 
             //获取关联域的操作类型和关系类型
             String foreignKey = null;
@@ -211,7 +211,7 @@ public class SqlInsert<T> {
                 }
 
                 LogUtil.d(TAG, "[insertList]: insert into " + this.mTableName + " " + sql);
-                rows += DbFactory.getInstance().getDatabase().insert(this.mTableName, null, cv);
+                rows += DbFactory.getInstance().openWriteDatabase().insert(this.mTableName, null, cv);
 
 
                 //获取关联域的操作类型和关系类型
@@ -259,7 +259,7 @@ public class SqlInsert<T> {
                         }
 
                         LogUtil.d(TAG, "[insertList]: insert into " + RelationsDaoTableName + " " + sql);
-                        rows += DbFactory.getInstance().getDatabase().insert(RelationsDaoTableName, null, RelationsDaoCv);
+                        rows += DbFactory.getInstance().openWriteDatabase().insert(RelationsDaoTableName, null, RelationsDaoCv);
                     }
 
                 } else if (RelationsType.one2many.equals(type) || RelationsType.many2many.equals(type)) {
@@ -283,7 +283,7 @@ public class SqlInsert<T> {
                             }
 
                             LogUtil.d(TAG, "[insertList]: insert into " + RelationsDaoTableName + " " + sql);
-                            rows += DbFactory.getInstance().getDatabase().insert(RelationsDaoTableName, null, RelationsDaoCv);
+                            rows += DbFactory.getInstance().openWriteDatabase().insert(RelationsDaoTableName, null, RelationsDaoCv);
                         }
                     }
 
