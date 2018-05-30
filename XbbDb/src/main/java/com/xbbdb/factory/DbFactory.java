@@ -3,6 +3,7 @@ package com.xbbdb.factory;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.xbbdb.global.DbConfig;
 import com.xbbdb.orm.DBHelper;
 import com.xbbdb.orm.helper.DbModel;
 import com.xbbdb.utils.LogUtil;
@@ -41,14 +42,14 @@ public class DbFactory extends DBHelper {
         return mDbInsideHelper;
     }
 
-    public static void init(Context context, Class<?>[] clazz, String dBNAME, int dBVERSION) {
+    public static void init(DbConfig config) {
         if (mDbInsideHelper == null) {
             synchronized (DbFactory.class) {
                 if (mDbInsideHelper == null) {
-                    mClazz = clazz;
-                    DBNAME = dBNAME;
-                    DBVERSION = dBVERSION;
-                    mDbInsideHelper = new DbFactory(context.getApplicationContext());
+                    mClazz = config.getmClazz();
+                    DBNAME = config.getDBNAME();
+                    DBVERSION = config.getDBVERSION();
+                    mDbInsideHelper = new DbFactory(config.getContext());
                 }
             }
         }
