@@ -3,8 +3,8 @@ package com.xbbdb.sql;
 import android.content.ContentValues;
 import android.text.TextUtils;
 
-import com.xbbdb.dao.DbFactory;
-import com.xbbdb.orm.AbTableHelper;
+import com.xbbdb.factory.DbFactory;
+import com.xbbdb.orm.TableHelper;
 import com.xbbdb.orm.annotation.Column;
 import com.xbbdb.orm.annotation.RelationDao;
 import com.xbbdb.orm.annotation.RelationsType;
@@ -63,14 +63,14 @@ public class SqlUpdate<T> {
      */
     private String getTableNeame(Class<?> daoClasses) {
         String tablename = "";
-        LogUtil.i(true, TAG, "DBImpl: getTableNeame: [ccccccc]="
+        LogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
                 + daoClasses);
         if (daoClasses.isAnnotationPresent(Table.class)) {
             Table table = daoClasses.getAnnotation(Table.class);
             tablename = table.name();
         }
         if (TextUtils.isEmpty(tablename)) {
-            LogUtil.i(true, TAG, "DaoConfig: DaoConfig: [daoClasses]="
+            LogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
                     + "想要映射的实体[" + daoClasses.getName() + "],未注解@Table(name=\"?\"),被跳过");
 
         }
@@ -86,7 +86,7 @@ public class SqlUpdate<T> {
      */
     private List<Field> getFiled(Class<?> daoClasses) {
         // 加载所有字段
-        return AbTableHelper.joinFields(daoClasses.getDeclaredFields(),
+        return TableHelper.joinFields(daoClasses.getDeclaredFields(),
                 daoClasses.getSuperclass().getDeclaredFields());
     }
 
@@ -105,7 +105,7 @@ public class SqlUpdate<T> {
             String sql = setContentValues(entity, cv, TYPE_NOT_INCREMENT, METHOD_UPDATE);
             String where = column + " = ?";
             String idValues = (String) cv.get(column);
-            LogUtil.i(true, TAG, "DBImpl: execSql: [8888888899999]=" + idValues + "  sql= " + sql);
+            LogUtil.i(TAG, "DBImpl: execSql: [8888888899999]=" + idValues + "  sql= " + sql);
 
             String[] whereValue = {idValues};
 
@@ -146,7 +146,7 @@ public class SqlUpdate<T> {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(true, TAG, "DBImpl: update: [column, entity]="
+            LogUtil.i(TAG, "DBImpl: update: [column, entity]="
                     + e);
         } finally {
         }
@@ -193,7 +193,7 @@ public class SqlUpdate<T> {
         StringBuffer strUpdate = new StringBuffer(" ");
 
         // 加载所有字段
-        List<Field> allFields = AbTableHelper.joinFields(entity.getClass().getDeclaredFields(),
+        List<Field> allFields = TableHelper.joinFields(entity.getClass().getDeclaredFields(),
                 entity.getClass().getSuperclass().getDeclaredFields());
         for (Field field : allFields) {
             if (!field.isAnnotationPresent(Column.class)) {
@@ -225,11 +225,11 @@ public class SqlUpdate<T> {
         if (method == METHOD_INSERT) {
             strField.deleteCharAt(strField.length() - 1).append(")");
             strValue.deleteCharAt(strValue.length() - 1).append(")");
-            LogUtil.i(true, TAG, "DBImpl: setContentValues: [inerttttttttt]="
+            LogUtil.i(TAG, "DBImpl: setContentValues: [inerttttttttt]="
                     + strField.toString() + strValue.toString());
             return strField.toString() + strValue.toString();
         } else {
-            LogUtil.i(true, TAG, "DBImpl: setContentValues: [inerttttttttt11]="
+            LogUtil.i(TAG, "DBImpl: setContentValues: [inerttttttttt11]="
                     + strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString());
             return strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString();
         }

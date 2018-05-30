@@ -1,10 +1,10 @@
-package com.xbbdb.dao;
+package com.xbbdb.factory;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.xbbdb.orm.DBHelper;
-import com.xbbdb.orm.dao.DbModel;
+import com.xbbdb.orm.helper.DbModel;
 import com.xbbdb.utils.LogUtil;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -84,7 +84,7 @@ public class DbFactory extends DBHelper {
                 mSQLiteDatabase = getWritableDatabase();
             }
         } catch (Exception e) {
-            LogUtil.i(true, TAG, "DbFactory: getDatabase: []="
+            LogUtil.i(TAG, "DbFactory: getDatabase: []="
                     + e);
         } finally {
             lock.unlock();
@@ -98,7 +98,7 @@ public class DbFactory extends DBHelper {
         try {
             if (canCloseDb()) {
                 if (mSQLiteDatabase != null) {
-                    LogUtil.i(true, TAG, "DBImpl: closeDatabase: [ddddddd]="
+                    LogUtil.i(TAG, "DBImpl: closeDatabase: [ddddddd]="
                             + mSQLiteDatabase.isOpen() + "   " + isOpenDb());
                     if (mSQLiteDatabase.isOpen()) {
                         mSQLiteDatabase.close();
@@ -108,7 +108,7 @@ public class DbFactory extends DBHelper {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(true, TAG, "DBImpl: closeDatabase: [transaction]="
+            LogUtil.i(TAG, "DBImpl: closeDatabase: [transaction]="
                     + e);
         }
     }

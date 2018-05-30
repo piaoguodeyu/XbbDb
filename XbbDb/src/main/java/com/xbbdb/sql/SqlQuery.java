@@ -4,8 +4,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
 
-import com.xbbdb.dao.DbFactory;
-import com.xbbdb.orm.AbTableHelper;
+import com.xbbdb.factory.DbFactory;
+import com.xbbdb.orm.TableHelper;
 import com.xbbdb.orm.annotation.Column;
 import com.xbbdb.orm.annotation.RelationDao;
 import com.xbbdb.orm.annotation.RelationsType;
@@ -138,7 +138,7 @@ public class SqlQuery<T> {
             //得到关联表的表名查询
             for (Object entity : list) {
 
-                LogUtil.i(true, TAG, "DBImpl: queryListAbs: [llllllll]="
+                LogUtil.i(TAG, "DBImpl: queryListAbs: [llllllll]="
                         + entity);
                 if (RelationsType.one2one.equals(type)) {
                     //一对一关系
@@ -154,7 +154,7 @@ public class SqlQuery<T> {
                         relationsDaoEntityField.setAccessible(true);
                         Column relationsDaoEntityColumn = relationsDaoEntityField.getAnnotation(Column.class);
                         if (relationsDaoEntityColumn == null) {
-                            LogUtil.i(true, TAG, "DBImpl: queryList:00000000000");
+                            LogUtil.i(TAG, "DBImpl: queryList:00000000000");
                             continue;
                         }
                         //获取外键的值作为关联表的查询条件
@@ -175,7 +175,7 @@ public class SqlQuery<T> {
                                     //设置可访问
                                     pFiled.setAccessible(true);
                                     value = String.valueOf(pFiled.get(entity));
-                                    LogUtil.i(true, TAG, "DBImpl: queryListAbs: [vvvvvvvvv]="
+                                    LogUtil.i(TAG, "DBImpl: queryListAbs: [vvvvvvvvv]="
                                             + value);
 
                                     relationsDaoList = queryRelation(childField.getType(), foreignKey, value);
@@ -232,7 +232,7 @@ public class SqlQuery<T> {
                                     //设置可访问
                                     pFiled.setAccessible(true);
                                     value = String.valueOf(pFiled.get(entity));
-                                    LogUtil.i(true, TAG, "DBImpl: queryListAbs: [vvvvvvvvv]="
+                                    LogUtil.i(TAG, "DBImpl: queryListAbs: [vvvvvvvvv]="
                                             + value);
                                     relationsDaoList = queryRelation(listEntityClazz, foreignKey, value);
                                     //查询数据设置给这个域
@@ -281,7 +281,7 @@ public class SqlQuery<T> {
         while (cursor.moveToNext()) {
             Object entity = clazz.newInstance();
             // 加载所有字段
-            List<Field> allFields = AbTableHelper.joinFields(entity.getClass().getDeclaredFields(),
+            List<Field> allFields = TableHelper.joinFields(entity.getClass().getDeclaredFields(),
                     entity.getClass().getSuperclass().getDeclaredFields());
 
 
@@ -357,7 +357,7 @@ public class SqlQuery<T> {
 
     public List<T> queryListAbs(int page, int pageSize) {
         String limit = (page - 1) * pageSize + "," + pageSize;
-        LogUtil.i(true, TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
+        LogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
         return (List<T>) queryListAbs(this.clazz, null, null, null, null, null, null, limit);
     }
 
@@ -557,7 +557,7 @@ public class SqlQuery<T> {
      */
     private List<Field> getFiled(Class<?> daoClasses) {
         // 加载所有字段
-        return AbTableHelper.joinFields(daoClasses.getDeclaredFields(),
+        return TableHelper.joinFields(daoClasses.getDeclaredFields(),
                 daoClasses.getSuperclass().getDeclaredFields());
     }
 
@@ -569,14 +569,14 @@ public class SqlQuery<T> {
      */
     private String getTableNeame(Class<?> daoClasses) {
         String tablename = "";
-        LogUtil.i(true, TAG, "DBImpl: getTableNeame: [ccccccc]="
+        LogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
                 + daoClasses);
         if (daoClasses.isAnnotationPresent(Table.class)) {
             Table table = daoClasses.getAnnotation(Table.class);
             tablename = table.name();
         }
         if (TextUtils.isEmpty(tablename)) {
-            LogUtil.i(true, TAG, "DaoConfig: DaoConfig: [daoClasses]="
+            LogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
                     + "想要映射的实体[" + daoClasses.getName() + "],未注解@Table(name=\"?\"),被跳过");
 
         }

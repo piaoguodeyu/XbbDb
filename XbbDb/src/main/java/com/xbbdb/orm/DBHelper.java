@@ -23,7 +23,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.xbbdb.dao.DbFactory;
+import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.annotation.Column;
 import com.xbbdb.orm.annotation.Table;
 import com.xbbdb.utils.LogUtil;
@@ -69,7 +69,7 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        AbTableHelper.createTablesByClasses(db, this.modelClasses);
+        TableHelper.createTablesByClasses(db, this.modelClasses);
     }
 
     /**
@@ -85,7 +85,7 @@ public class DBHelper extends SQLiteOpenHelper {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                LogUtil.i(true, TAG, "DbFactory: onUpgrade: [uuuuuuu]="
+                LogUtil.i(TAG, "DbFactory: onUpgrade: [uuuuuuu]="
                         + "  oldVersion=" + oldVersion + "  newVersion" + newVersion);
                 try {
                     Map<String, Class<?>> hashMap = new HashMap<>();
@@ -96,7 +96,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     DbFactory.getInstance().openDb();
                     List<String> olderTables = saveOldTables(db, modelClasses, hashMap);
                     onCreate(db);
-//                    LogUtil.i(true, TAG, "DbFactory: onUpgrade: [sssssss1]="
+//                    LogUtil.i( TAG, "DbFactory: onUpgrade: [sssssss1]="
 //                            + "成功了  " + olderTables);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -115,7 +115,7 @@ public class DBHelper extends SQLiteOpenHelper {
             tablename = table.name();
         }
         if (TextUtils.isEmpty(tablename)) {
-            LogUtil.i(true, TAG, "DaoConfig: DaoConfig: [daoClasses]="
+            LogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
                     + "想要映射的实体[" + daoClasses.getName() + "],未注解@Table(name=\"?\"),被跳过");
 
         }
@@ -177,7 +177,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private List<String> getColumns(Class daoClasses) {
         List<String> list = new ArrayList<>();
-        List<Field> allFields = AbTableHelper.joinFieldsOnlyColumn(daoClasses.getDeclaredFields(), daoClasses.getSuperclass().getDeclaredFields());
+        List<Field> allFields = TableHelper.joinFieldsOnlyColumn(daoClasses.getDeclaredFields(), daoClasses.getSuperclass().getDeclaredFields());
         if (allFields == null) {
             return list;
         }

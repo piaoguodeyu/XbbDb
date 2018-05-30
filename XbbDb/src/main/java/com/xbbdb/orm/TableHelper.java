@@ -34,10 +34,10 @@ import java.util.Map;
 /**
  * @author zhangxiaowei
  */
-public class AbTableHelper {
+public class TableHelper {
 	
 	/** 日志标记. */
-	private static final String TAG = "AbTableHelper";
+	private static final String TAG = "TableHelper";
 
 	/**
 	 * 根据映射的对象创建表.
@@ -86,7 +86,7 @@ public class AbTableHelper {
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE TABLE ").append(tableName).append(" (");
 
-		List<Field> allFields = AbTableHelper.joinFieldsOnlyColumn(clazz.getDeclaredFields(), clazz.getSuperclass().getDeclaredFields());
+		List<Field> allFields = TableHelper.joinFieldsOnlyColumn(clazz.getDeclaredFields(), clazz.getSuperclass().getDeclaredFields());
 		for (Field field : allFields) {
 			if (!field.isAnnotationPresent(Column.class)) {
 				continue;

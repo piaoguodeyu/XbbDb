@@ -1,4 +1,4 @@
-package com.xbbdb.orm.dao;
+package com.xbbdb.orm.helper;
 
 import com.xbbdb.global.SqlColum;
 

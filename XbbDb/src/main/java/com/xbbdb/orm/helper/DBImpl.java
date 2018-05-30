@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xbbdb.orm.dao;
+package com.xbbdb.orm.helper;
 
-import com.xbbdb.dao.DbFactory;
-import com.xbbdb.orm.AbTableHelper;
+import com.xbbdb.factory.DbFactory;
+import com.xbbdb.orm.TableHelper;
 import com.xbbdb.orm.annotation.Column;
 import com.xbbdb.orm.annotation.Id;
 import com.xbbdb.orm.annotation.Table;
@@ -102,7 +102,7 @@ public class DBImpl<T> {
         }
 
         // 加载所有字段
-        this.allFields = AbTableHelper.joinFields(this.clazz.getDeclaredFields(),
+        this.allFields = TableHelper.joinFields(this.clazz.getDeclaredFields(),
                 this.clazz.getSuperclass().getDeclaredFields());
 
         // 找到主键

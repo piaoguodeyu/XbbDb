@@ -2,8 +2,8 @@ package com.xbbdb.sql;
 
 import android.text.TextUtils;
 
-import com.xbbdb.dao.DbFactory;
-import com.xbbdb.orm.AbTableHelper;
+import com.xbbdb.factory.DbFactory;
+import com.xbbdb.orm.TableHelper;
 import com.xbbdb.orm.annotation.Column;
 import com.xbbdb.orm.annotation.RelationDao;
 import com.xbbdb.orm.annotation.RelationsType;
@@ -100,7 +100,7 @@ public class SqlDelete<T> {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(true, TAG, "DBImpl: deleteListReturnUnsuccessAbs: [list]="
+            LogUtil.i(TAG, "DBImpl: deleteListReturnUnsuccessAbs: [list]="
                     + e);
         } finally {
             lock.unlock();
@@ -199,7 +199,7 @@ public class SqlDelete<T> {
                                         //设置可访问
                                         pFiled.setAccessible(true);
                                         value = String.valueOf(pFiled.get(data));
-                                        LogUtil.i(true, TAG, "DBImpl: queryListAbs: [vvvvvvvvv666666]="
+                                        LogUtil.i(TAG, "DBImpl: queryListAbs: [vvvvvvvvv666666]="
                                                 + value);
                                         String values = String.valueOf(relationsDaoField.get(data));
                                         rows += deleteAbs(relationsDaoField.getType(), relationDao.foreignKey(), values);
@@ -238,7 +238,7 @@ public class SqlDelete<T> {
                                         //设置可访问
                                         pFiled.setAccessible(true);
                                         value = String.valueOf(pFiled.get(data));
-                                        LogUtil.i(true, TAG, "DBImpl: queryListAbs: [vvvvvvvvv00000]="
+                                        LogUtil.i(TAG, "DBImpl: queryListAbs: [vvvvvvvvv00000]="
                                                 + value);
                                         String values = String.valueOf(relationsDaoField.get(data));
 //
@@ -256,7 +256,7 @@ public class SqlDelete<T> {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(true, TAG, "DBImpl: deleteAbs: [clazz, coloum, id]="
+            LogUtil.i(TAG, "DBImpl: deleteAbs: [clazz, coloum, id]="
                     + e);
         } finally {
         }
@@ -281,14 +281,14 @@ public class SqlDelete<T> {
                 }
                 builder.deleteCharAt(builder.length() - 1);
                 builder.append(")");
-                LogUtil.i(true, TAG, "DBImpl: delete: [ids]="
+                LogUtil.i(TAG, "DBImpl: delete: [ids]="
                         + builder.toString());
                 List<T> list = (List<T>) mSqlQuery.queryListAbs(this.clazz, null, builder.toString(), null, null, null, null, null);
                 rows = deleteListAbs(list);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(true, TAG, "DBImpl: delete: [ids]="
+            LogUtil.i(TAG, "DBImpl: delete: [ids]="
                     + e);
         } finally {
             lock.unlock();
@@ -313,14 +313,14 @@ public class SqlDelete<T> {
                 }
                 builder.deleteCharAt(builder.length() - 1);
                 builder.append(")");
-                LogUtil.i(true, TAG, "DBImpl: delete: [ids]="
+                LogUtil.i(TAG, "DBImpl: delete: [ids]="
                         + builder.toString());
                 List<T> list = (List<T>) mSqlQuery.queryListAbs(this.clazz, null, builder.toString(), null, null, null, null, null);
                 rows = deleteListAbs(list);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(true, TAG, "DBImpl: delete: [ids]="
+            LogUtil.i(TAG, "DBImpl: delete: [ids]="
                     + e);
         } finally {
             lock.unlock();
@@ -348,7 +348,7 @@ public class SqlDelete<T> {
             rows = deleteListAbs(list);
 
         } catch (Exception e) {
-            LogUtil.i(true, TAG, "DBImpl: deleteAbs: [whereClause, whereArgs]="
+            LogUtil.i(TAG, "DBImpl: deleteAbs: [whereClause, whereArgs]="
                     + e);
             e.printStackTrace();
         } finally {
@@ -361,7 +361,7 @@ public class SqlDelete<T> {
         long rows = -1;
         String tablename = getTableNeame(clazz);
         rows = DbFactory.getInstance().getDatabase().delete(tablename, null, null);
-        LogUtil.i(true, TAG, "DBImpl: deleteAll: [deleteAllData=]=" + tablename);
+        LogUtil.i(TAG, "DBImpl: deleteAll: [deleteAllData=]=" + tablename);
 
         for (Field relationsDaoField : getFiled(clazz)) {
             if (!relationsDaoField.isAnnotationPresent(RelationDao.class)) {
@@ -398,7 +398,7 @@ public class SqlDelete<T> {
         long rows = -1;
         try {
             lock.lock();
-            LogUtil.i(true, TAG, "DBImpl: deleteAll: [mTableName]=" + mTableName);
+            LogUtil.i(TAG, "DBImpl: deleteAll: [mTableName]=" + mTableName);
             rows = deleteAllData(this.clazz);
         } catch (Exception e) {
             e.printStackTrace();
@@ -419,7 +419,7 @@ public class SqlDelete<T> {
                 if (column.equals(column1.name())) {
                     relationsDaoField.setAccessible(true);
                     String str = (String) relationsDaoField.get(entity);
-                    LogUtil.i(true, TAG, "DBImpl: : [deleteOne0000= delete from " + mTableName
+                    LogUtil.i(TAG, "DBImpl: : [deleteOne0000= delete from " + mTableName
                             + " where " + column + "= " + str);
                     rows = deleteAbs(entity.getClass(), column, str);
                 }
@@ -427,7 +427,7 @@ public class SqlDelete<T> {
 
 
         } catch (Exception e) {
-            LogUtil.i(true, TAG, "DBImpl: delete: [column, entity]="
+            LogUtil.i(TAG, "DBImpl: delete: [column, entity]="
                     + e);
             e.printStackTrace();
         } finally {
@@ -457,7 +457,7 @@ public class SqlDelete<T> {
      */
     private List<Field> getFiled(Class<?> daoClasses) {
         // 加载所有字段
-        return AbTableHelper.joinFields(daoClasses.getDeclaredFields(),
+        return TableHelper.joinFields(daoClasses.getDeclaredFields(),
                 daoClasses.getSuperclass().getDeclaredFields());
     }
 
@@ -469,14 +469,14 @@ public class SqlDelete<T> {
      */
     private String getTableNeame(Class<?> daoClasses) {
         String tablename = "";
-        LogUtil.i(true, TAG, "DBImpl: getTableNeame: [ccccccc]="
+        LogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
                 + daoClasses);
         if (daoClasses.isAnnotationPresent(Table.class)) {
             Table table = daoClasses.getAnnotation(Table.class);
             tablename = table.name();
         }
         if (TextUtils.isEmpty(tablename)) {
-            LogUtil.i(true, TAG, "DaoConfig: DaoConfig: [daoClasses]="
+            LogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
                     + "想要映射的实体[" + daoClasses.getName() + "],未注解@Table(name=\"?\"),被跳过");
 
         }
