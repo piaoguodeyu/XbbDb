@@ -14,7 +14,7 @@ public class Saff {
     String name;
     @Column(name = "phone")
     String phone;
-    @Column(name = "alipay1")
+    @Column(name = "alipay2")
     String alipay = "1999966";
     @Column(name = "wx3")
     String wx = "88888";
@@ -73,7 +73,7 @@ public class Saff {
                 "userid='" + userid + '\'' +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
-                ", alipay1='" + alipay + '\'' +
+                ", alipay2='" + alipay + '\'' +
                 ", wx3='" + wx + '\'' +
                 ", mitake='" + mitake + '\'' +
                 '}';

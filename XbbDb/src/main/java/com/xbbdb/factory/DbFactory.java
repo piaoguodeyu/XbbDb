@@ -124,6 +124,7 @@ public class DbFactory extends DBHelper {
     public void onCreateWriteDatabase(SQLiteDatabase db) {
         synchronized (DBHelper.class) {
             mWriteDatabase = db;
+            mReadDatabase = db;
         }
     }
 

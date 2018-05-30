@@ -14,8 +14,8 @@ public class User {
     String name;
     @Column(name = "phone")
     String phone;
-    @Column(name = "alipay1")
-    String alipay1 = "00988888888";
+    @Column(name = "alipay2")
+    String alipay2 = "5555888888";
     @Column(name = "wx3")
     String wx3 = "66666";
     @Column(name = "mitake")
@@ -40,12 +40,12 @@ public class User {
     public User() {
     }
 
-    public String getAlipay1() {
-        return alipay1;
+    public String getAlipay2() {
+        return alipay2;
     }
 
-    public void setAlipay1(String alipay1) {
-        this.alipay1 = alipay1;
+    public void setAlipay2(String alipay2) {
+        this.alipay2 = alipay2;
     }
 
     public String getPhone() {
@@ -73,7 +73,7 @@ public class User {
                 "userid='" + userid + '\'' +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
-                ", alipay1='" + alipay1 + '\'' +
+                ", alipay2='" + alipay2 + '\'' +
                 ", wx3='" + wx3 + '\'' +
                 ", mitake='" + mitake + '\'' +
                 '}';

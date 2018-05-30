@@ -92,13 +92,13 @@ public class DBHelper extends SQLiteOpenHelper {
                 hashMap.put(tableNeame, clazz);
             }
             DbFactory.getInstance().onCreateWriteDatabase(db);
-            DbFactory.getInstance().openWriteDatabase();
+//            DbFactory.getInstance().openWriteDatabase();
             saveOldTables(db, modelClasses, hashMap);
             onCreate(db);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            DbFactory.getInstance().closeWriteDatabase();
+//            DbFactory.getInstance().closeWriteDatabase();
         }
         Log.i("DBHelper", "onUpgradeuuuuuuu888888= ");
     }

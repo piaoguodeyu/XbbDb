@@ -20,6 +20,6 @@ public class MainActivity extends Activity {
         DbModel<User> model = DbFactory.getInstance().openSession(User.class);
         List<User> list=model.queryList();
         Log.e("MainActivity", "onCreate= "+list.toString());
-        model.insert(new User("88888","xiaowei8888","0000700"));
+        model.insert(new User("777777","aaaaaaa8","009900"));
     }
 }
