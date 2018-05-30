@@ -14,7 +14,6 @@ import com.xbbdb.utils.LogUtil;
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by zhangxiaowei on 16/11/18.
@@ -37,10 +36,6 @@ public class SqlInsert<T> {
      */
     private final int TYPE_INCREMENT = 1;
 
-    /**
-     * 锁对象
-     */
-    private final ReentrantLock lock = new ReentrantLock();
     /**
      * The table name.
      */
@@ -198,7 +193,6 @@ public class SqlInsert<T> {
     public long insertListAbs(List<T> entityList, boolean flag) {
         long rows = 0;
         try {
-            lock.lock();
             String sql = null;
             for (T entity : entityList) {
                 ContentValues cv = new ContentValues();
@@ -293,7 +287,6 @@ public class SqlInsert<T> {
             LogUtil.d(this.TAG, "[insertList] into DB Exception.");
             e.printStackTrace();
         } finally {
-            lock.unlock();
         }
 
         return rows;

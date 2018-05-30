@@ -452,7 +452,6 @@ public class SqlQuery<T> {
      * @return
      */
     public List<Object> queryRelation(Class<?> daoClasses, String colum, String columValues) {
-//        synchronized (lock) {
         String table = getTableNeame(daoClasses);
         String selection = colum + " = ?";
         String[] selectionArgs = {columValues};
@@ -461,7 +460,6 @@ public class SqlQuery<T> {
         List<Object> list = queryListAbs(daoClasses, null, selection, selectionArgs, null, null, null,
                 null);
         return list;
-//        }
     }
 
 

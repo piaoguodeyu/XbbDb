@@ -14,7 +14,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by zhangxiaowei on 16/11/18.
@@ -22,10 +21,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class SqlDelete<T> {
     private final String TAG = SqlDelete.class.getSimpleName();
-    /**
-     * 锁对象
-     */
-    private final ReentrantLock lock = new ReentrantLock();
     /**
      * The table name.
      */
@@ -73,14 +68,12 @@ public class SqlDelete<T> {
         }
         int rows = -1;
         try {
-            lock.lock();
             for (T data : ids) {
                 rows += delete(this.idColumn, data);
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            lock.unlock();
 
         }
         return rows;
@@ -92,7 +85,6 @@ public class SqlDelete<T> {
         }
         int rows = -1;
         try {
-            lock.lock();
             for (int i = 0; i < list.size(); ) {
                 T data = list.get(0);
                 rows += delete(this.idColumn, data);
@@ -103,8 +95,6 @@ public class SqlDelete<T> {
             LogUtil.i(TAG, "DBImpl: deleteListReturnUnsuccessAbs: [list]="
                     + e);
         } finally {
-            lock.unlock();
-
         }
         return list;
     }
@@ -117,12 +107,10 @@ public class SqlDelete<T> {
     public long deleteAbs(String id) {
         long rows = -1;
         try {
-            lock.lock();
             rows = deleteAbs(this.clazz, this.idColumn, id);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            lock.unlock();
         }
         return rows;
     }
@@ -271,7 +259,6 @@ public class SqlDelete<T> {
     public int deleteAbs(int[] ids) {
         int rows = -1;
         try {
-            lock.lock();
             if (ids.length > 0) {
                 StringBuilder builder = new StringBuilder(this.idColumn);
                 builder.append(" in (");
@@ -291,7 +278,6 @@ public class SqlDelete<T> {
             LogUtil.i(TAG, "DBImpl: delete: [ids]="
                     + e);
         } finally {
-            lock.unlock();
         }
         return rows;
     }
@@ -303,7 +289,6 @@ public class SqlDelete<T> {
     public int deleteAbs(String[] ids) {
         int rows = -1;
         try {
-            lock.lock();
             if (ids.length > 0) {
                 StringBuilder builder = new StringBuilder(this.idColumn);
                 builder.append(" in (");
@@ -323,7 +308,6 @@ public class SqlDelete<T> {
             LogUtil.i(TAG, "DBImpl: delete: [ids]="
                     + e);
         } finally {
-            lock.unlock();
         }
 
 
@@ -338,7 +322,6 @@ public class SqlDelete<T> {
     public long deleteAbs(String whereClause, String[] whereArgs) {
         long rows = -1;
         try {
-            lock.lock();
             String mLogSql = getLogSql(whereClause, whereArgs);
             if (!TextUtils.isEmpty(mLogSql)) {
                 mLogSql = " where " + mLogSql;
@@ -352,7 +335,6 @@ public class SqlDelete<T> {
                     + e);
             e.printStackTrace();
         } finally {
-            lock.unlock();
         }
         return rows;
     }
@@ -397,13 +379,10 @@ public class SqlDelete<T> {
     public long deleteAllAbs() {
         long rows = -1;
         try {
-            lock.lock();
             LogUtil.i(TAG, "DBImpl: deleteAll: [mTableName]=" + mTableName);
             rows = deleteAllData(this.clazz);
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            lock.unlock();
         }
         return rows;
     }
@@ -412,7 +391,6 @@ public class SqlDelete<T> {
     public long delete(String column, T entity) {
         long rows = -1;
         try {
-            lock.lock();
             List<Field> list = getFiled(entity.getClass());
             for (Field relationsDaoField : list) {
                 Column column1 = relationsDaoField.getAnnotation(Column.class);
@@ -430,8 +408,6 @@ public class SqlDelete<T> {
             LogUtil.i(TAG, "DBImpl: delete: [column, entity]="
                     + e);
             e.printStackTrace();
-        } finally {
-            lock.unlock();
         }
         return rows;
 

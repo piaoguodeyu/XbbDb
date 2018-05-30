@@ -14,7 +14,6 @@ import com.xbbdb.utils.LogUtil;
 import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by zhangxiaowei on 16/11/18.
@@ -36,10 +35,6 @@ public class SqlUpdate<T> {
      */
     private final int METHOD_UPDATE = 1;
 
-    /**
-     * 锁对象
-     */
-    private final ReentrantLock lock = new ReentrantLock();
     /**
      * 自定义主键
      */
@@ -160,7 +155,6 @@ public class SqlUpdate<T> {
     public long updateListAbs(List<T> entityList) {
         long rows = -1;
         try {
-            lock.lock();
             if (entityList != null && entityList.size() > 0) {
                 for (Object data : entityList) {
                     rows += update(this.idColumn, data);
@@ -169,8 +163,6 @@ public class SqlUpdate<T> {
         } catch (Exception e) {
             LogUtil.d(this.TAG, "[execSql] DB Exception.");
             e.printStackTrace();
-        } finally {
-            lock.unlock();
         }
 
         return rows;
