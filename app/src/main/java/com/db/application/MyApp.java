@@ -2,7 +2,10 @@ package com.db.application;
 
 import android.app.Application;
 
-import com.xbbdb.dao.DbFactory;
+import com.db.table.User;
+import com.xbbdb.factory.DbFactory;
+import com.xbbdb.global.DbConfig;
+
 
 /**
  * Created by zhangxiaowei on 18/5/30.
@@ -10,9 +13,15 @@ import com.xbbdb.dao.DbFactory;
 
 public class MyApp extends Application {
 
+    private Class<?>[] clazz={User.class};
+
     @Override
     public void onCreate() {
         super.onCreate();
-        DbFactory.init();
+        DbConfig config=new DbConfig();
+        config.setContext(getApplicationContext())
+        .setDBNAME("xbb").setDBVERSION(1)
+        .setClazz(clazz);
+        DbFactory.init(config);
     }
 }

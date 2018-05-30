@@ -290,7 +290,7 @@ public class DBImpl<T> {
             mSQLiteOpenHelper.openDb();
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(true, TAG, "DBImpl: startWritableDatabase: [transaction]="
+            LogUtil.i(TAG, "DBImpl: startWritableDatabase: [transaction]="
                     + e);
         } finally {
         }
@@ -308,7 +308,7 @@ public class DBImpl<T> {
             mSQLiteOpenHelper.openDb();
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(true, TAG, "DBImpl: startReadableDatabase: [transaction]="
+            LogUtil.i(TAG, "DBImpl: startReadableDatabase: [transaction]="
                     + e);
         }
 
@@ -327,7 +327,7 @@ public class DBImpl<T> {
 //            }
 //        } catch (Exception e) {
 //            e.printStackTrace();
-//            LogUtil.i(true, TAG, "DBImpl: setTransactionSuccessful: []="
+//            LogUtil.i( TAG, "DBImpl: setTransactionSuccessful: []="
 //                    + e);
 //        }
     }
@@ -410,7 +410,7 @@ public class DBImpl<T> {
 
     protected List<T> queryListAbs(int page, int pageSize) {
         String limit = (page - 1) * pageSize + "," + pageSize;
-        LogUtil.i(true, TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
+        LogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
         return (List<T>) new SqlQuery<T>(this.clazz, this.allFields, this.mTableName, this.idColumn).queryListAbs(this.clazz, null, null, null, null, null, null, limit);
     }
 

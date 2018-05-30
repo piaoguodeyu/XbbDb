@@ -2,6 +2,7 @@ package com.xbbdb.factory;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.view.View;
 
 import com.xbbdb.global.DbConfig;
 import com.xbbdb.orm.DBHelper;
@@ -117,6 +118,17 @@ public class DbFactory extends DBHelper {
 
     public <T> DbModel<T> openSession(Class<T> dbModel) {
         try {
+
+
+
+
+//            Class[] argsClass = new Class[args.length];
+//            for (int i = 0, j = args.length; i < j; i++) {
+//                argsClass[i] = args[i].getClass();
+//            }
+//            Constructor cons = newoneClass.getConstructor(argsClass);
+//            return cons.newInstance(args);
+//            return dbModel.newInstance();
             return new DbModel<T>(dbModel);
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.xbbdb">
+    package="com.xbbdb.test">
 
     <application
         android:allowBackup="true"
@@ -8,6 +8,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:name="com.db.application.MyApp"
         android:theme="@style/AppTheme">
         <activity android:name="com.db.MainActivity">
             <intent-filter>
