@@ -9,17 +9,21 @@ import com.xbbdb.orm.annotation.Table;
 @Table(name = "User")
 public class User {
     @Column(name = "userid")
-    String userid;
+    String userid = "60000";
     @Column(name = "name")
-    String name;
+    String name = "大秦帝国";
     @Column(name = "phone")
-    String phone;
+    String phone = "17717886592";
     @Column(name = "alipay2")
     String alipay2 = "5555888888";
     @Column(name = "wx3")
-    String wx3 = "66666";
+    String wx3 = "66666*****";
     @Column(name = "mitake")
     String mitake = "mitake";
+    @Column(name = "code")
+    String code = "00700.hk";
+    @Column(name = "type")
+    String type = "type";
 
     public String getMitake() {
         return mitake;
@@ -76,6 +80,8 @@ public class User {
                 ", alipay2='" + alipay2 + '\'' +
                 ", wx3='" + wx3 + '\'' +
                 ", mitake='" + mitake + '\'' +
+                ", code='" + code + '\'' +
+                ", type='" + type + '\'' +
                 '}';
     }
 

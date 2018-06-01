@@ -201,7 +201,6 @@ public class TableHelper {
 				RelationDao relations = field.getAnnotation(RelationDao.class);
 				map.put(relations.name(), field);
 			}
-			
 		}
 		for (Field field : fields2) {
 			// 过滤掉非Column和RelationDao定义的字段

@@ -2,6 +2,7 @@ package com.xbbdb.sql;
 
 import android.content.ContentValues;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.TableHelper;
@@ -12,7 +13,6 @@ import com.xbbdb.orm.annotation.Table;
 import com.xbbdb.utils.LogUtil;
 
 import java.lang.reflect.Field;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -110,27 +110,18 @@ public class SqlInsert<T> {
      */
 
     public long insertAbs(Object entity, boolean flag) {
-        String sql = null;
         long row = 0L;
         try {
             ContentValues cv = new ContentValues();
-            if (flag) {
-                // id自增
-                sql = setContentValues(entity, cv, TYPE_INCREMENT, METHOD_INSERT);
-            } else {
-                // id需指定
-                sql = setContentValues(entity, cv, TYPE_NOT_INCREMENT, METHOD_INSERT);
-            }
-
+            // 加载所有字段
+            List<Field> allFields = TableHelper.joinFields(entity.getClass().getDeclaredFields(),
+                    entity.getClass().getSuperclass().getDeclaredFields());
+            setContentValues(entity, cv, allFields, METHOD_INSERT);
             String tablename = getTableNeame(entity.getClass());
-            LogUtil.i(TAG, "DBImpl: insert: [*********"
-                    + "[insert]: insert into " + tablename + " " + sql);
-            row = DbFactory.getInstance().openWriteDatabase().insert(tablename, null, cv);
+            row = DbFactory.getInstance().getWriteDatabase().insert(tablename, null, cv);
 
             //获取关联域的操作类型和关系类型
-            String foreignKey = null;
             String type = null;
-            String action = null;
             List<Field> filed = getFiled(entity.getClass());
             //需要判断是否有关联表
             for (Field relationsDaoField : filed) {
@@ -145,7 +136,7 @@ public class SqlInsert<T> {
                 }
                 RelationDao relationDao = relationsDaoField.getAnnotation(RelationDao.class);
                 //获取外键列名
-                foreignKey = relationDao.foreignKey();
+//                foreignKey = relationDao.foreignKey();
                 //关联类型
                 type = relationDao.type();
                 //操作类型
@@ -193,39 +184,35 @@ public class SqlInsert<T> {
     public long insertListAbs(List<T> entityList, boolean flag) {
         long rows = 0;
         try {
-            String sql = null;
+            // 加载所有字段
+            boolean hasRelationsDao = false;
             for (T entity : entityList) {
                 ContentValues cv = new ContentValues();
-                if (flag) {
-                    // id自增
-                    sql = setContentValues(entity, cv, TYPE_INCREMENT, METHOD_INSERT);
-                } else {
-                    // id需指定
-                    sql = setContentValues(entity, cv, TYPE_NOT_INCREMENT, METHOD_INSERT);
+                setContentValues(entity, cv, allFields, METHOD_INSERT);
+//                LogUtil.d(TAG, "[insertList]: insert into " + this.mTableName + " " + sql);
+                rows += DbFactory.getInstance().getWriteDatabase().insert(this.mTableName, null, cv);
+
+                if (!hasRelationsDao) {
+                    continue;
                 }
-
-                LogUtil.d(TAG, "[insertList]: insert into " + this.mTableName + " " + sql);
-                rows += DbFactory.getInstance().openWriteDatabase().insert(this.mTableName, null, cv);
-
-
                 //获取关联域的操作类型和关系类型
-                String foreignKey = null;
+//                String foreignKey = null;
                 String type = null;
                 Field field = null;
                 //需要判断是否有关联表
-                for (Field RelationsDaoField : allFields) {
-                    if (!RelationsDaoField.isAnnotationPresent(RelationDao.class)) {
+                for (Field relationsDaoField : allFields) {
+                    if (!relationsDaoField.isAnnotationPresent(RelationDao.class)) {
                         continue;
                     }
-
-                    RelationDao RelationsDao = RelationsDaoField.getAnnotation(RelationDao.class);
+                    hasRelationsDao = true;
+                    RelationDao RelationsDao = relationsDaoField.getAnnotation(RelationDao.class);
                     //获取外键列名
-                    foreignKey = RelationsDao.foreignKey();
+//                    foreignKey = RelationsDao.foreignKey();
                     //关联类型
                     type = RelationsDao.type();
                     //设置可访问
-                    RelationsDaoField.setAccessible(true);
-                    field = RelationsDaoField;
+                    relationsDaoField.setAccessible(true);
+                    field = relationsDaoField;
                 }
 
                 if (field == null) {
@@ -236,55 +223,49 @@ public class SqlInsert<T> {
                 if (RelationsType.one2one.equals(type)) {
                     //一对一关系
                     //获取关联表的对象
-                    T RelationsDaoEntity = (T) field.get(entity);
-                    if (RelationsDaoEntity != null) {
+                    Object relationsDaoEntity = field.get(entity);
+                    if (relationsDaoEntity != null) {
                         ContentValues RelationsDaoCv = new ContentValues();
-                        if (flag) {
-                            // id自增
-                            sql = setContentValues(RelationsDaoEntity, RelationsDaoCv, TYPE_INCREMENT, METHOD_INSERT);
-                        } else {
-                            // id需指定
-                            sql = setContentValues(RelationsDaoEntity, RelationsDaoCv, TYPE_NOT_INCREMENT, METHOD_INSERT);
-                        }
+
+                        List<Field> fieldList = TableHelper.joinFields(relationsDaoEntity.getClass().getDeclaredFields(),
+                                relationsDaoEntity.getClass().getSuperclass().getDeclaredFields());
+                        setContentValues(relationsDaoEntity, RelationsDaoCv, fieldList, METHOD_INSERT);
                         String RelationsDaoTableName = "";
-                        if (RelationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
-                            Table table = RelationsDaoEntity.getClass().getAnnotation(Table.class);
+                        if (relationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
+                            Table table = relationsDaoEntity.getClass().getAnnotation(Table.class);
                             RelationsDaoTableName = table.name();
                         }
 
-                        LogUtil.d(TAG, "[insertList]: insert into " + RelationsDaoTableName + " " + sql);
-                        rows += DbFactory.getInstance().openWriteDatabase().insert(RelationsDaoTableName, null, RelationsDaoCv);
+//                        LogUtil.d(TAG, "[insertList]: insert into " + RelationsDaoTableName + " " + sql);
+                        rows += DbFactory.getInstance().getWriteDatabase().insert(RelationsDaoTableName, null, RelationsDaoCv);
                     }
 
                 } else if (RelationsType.one2many.equals(type) || RelationsType.many2many.equals(type)) {
                     //一对多关系
                     //获取关联表的对象
-                    List<T> list = (List<T>) field.get(entity);
+                    List<Object> list = (List<Object>) field.get(entity);
                     if (list != null && list.size() > 0) {
-                        for (T RelationsDaoEntity : list) {
+                        for (Object relationsDaoEntity : list) {
                             ContentValues RelationsDaoCv = new ContentValues();
-                            if (flag) {
-                                // id自增
-                                sql = setContentValues(RelationsDaoEntity, RelationsDaoCv, TYPE_INCREMENT, METHOD_INSERT);
-                            } else {
-                                // id需指定
-                                sql = setContentValues(RelationsDaoEntity, RelationsDaoCv, TYPE_NOT_INCREMENT, METHOD_INSERT);
-                            }
+                            List<Field> fieldList = TableHelper.joinFields(relationsDaoEntity.getClass().getDeclaredFields(),
+                                    relationsDaoEntity.getClass().getSuperclass().getDeclaredFields());
+
+                            setContentValues(relationsDaoEntity, RelationsDaoCv, fieldList, METHOD_INSERT);
                             String RelationsDaoTableName = "";
-                            if (RelationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
-                                Table table = RelationsDaoEntity.getClass().getAnnotation(Table.class);
+                            if (relationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
+                                Table table = relationsDaoEntity.getClass().getAnnotation(Table.class);
                                 RelationsDaoTableName = table.name();
                             }
 
-                            LogUtil.d(TAG, "[insertList]: insert into " + RelationsDaoTableName + " " + sql);
-                            rows += DbFactory.getInstance().openWriteDatabase().insert(RelationsDaoTableName, null, RelationsDaoCv);
+//                            LogUtil.d(TAG, "[insertList]: insert into " + RelationsDaoTableName + " " + sql);
+                            rows += DbFactory.getInstance().getWriteDatabase().insert(RelationsDaoTableName, null, RelationsDaoCv);
                         }
                     }
 
                 }
             }
         } catch (Exception e) {
-            LogUtil.d(this.TAG, "[insertList] into DB Exception.");
+            LogUtil.d(this.TAG, "[insertList] into DB Exception." + e.toString());
             e.printStackTrace();
         } finally {
         }
@@ -295,22 +276,18 @@ public class SqlInsert<T> {
     /**
      * 设置这个ContentValues.
      *
-     * @param entity 映射实体
-     * @param cv     the cv
-     * @param type   id类的类型，是否自增
-     * @param method 预执行的操作
+     * @param entity        映射实体
+     * @param contentValues the cv
+     * @param method        预执行的操作
      * @return sql的字符串
      * @throws IllegalAccessException the illegal access exception
      */
-    private String setContentValues(Object entity, ContentValues cv, int type,
+    private String setContentValues(Object entity, ContentValues contentValues, List<Field> allFields,
                                     int method) throws IllegalAccessException {
-        StringBuffer strField = new StringBuffer("(");
-        StringBuffer strValue = new StringBuffer(" values(");
-        StringBuffer strUpdate = new StringBuffer(" ");
+//        StringBuffer strField = new StringBuffer("(");
+//        StringBuffer strValue = new StringBuffer(" values(");
+//        StringBuffer strUpdate = new StringBuffer(" ");
 
-        // 加载所有字段
-        List<Field> allFields = TableHelper.joinFields(entity.getClass().getDeclaredFields(),
-                entity.getClass().getSuperclass().getDeclaredFields());
         for (Field field : allFields) {
             if (!field.isAnnotationPresent(Column.class)) {
                 continue;
@@ -318,37 +295,31 @@ public class SqlInsert<T> {
             Column column = field.getAnnotation(Column.class);
 
             field.setAccessible(true);
-            Object fieldValue = field.get(entity);
-            if (fieldValue == null)
+            String value = (String) field.get(entity);
+            if (value == null)
                 continue;
-            // 处理java.util.Date类型,execSql
-            if (Date.class == field.getType()) {
-                // 2012-06-10
-                cv.put(column.name(), ((Date) fieldValue).getTime());
-                continue;
-            }
-            String value = String.valueOf(fieldValue);
-            cv.put(column.name(), value);
-            if (method == METHOD_INSERT) {
-                strField.append(column.name()).append(",");
-                strValue.append("'").append(value).append("',");
-            } else {
-                strUpdate.append(column.name()).append("=").append("'").append(
-                        value).append("',");
-            }
+//            String value = String.valueOf(fieldValue);
+            contentValues.put(column.name(), value);
+//            if (method == METHOD_INSERT) {
+//                strField.append(column.name()).append(",");
+//                strValue.append("'").append(value).append("',");
+//            } else {
+//                strUpdate.append(column.name()).append("=").append("'").append(
+//                        value).append("',");
+//            }
 
+//        }
+//        if (method == METHOD_INSERT) {
+//            strField.deleteCharAt(strField.length() - 1).append(")");
+//            strValue.deleteCharAt(strValue.length() - 1).append(")");
+//            Log.e("SqlInsert", "setContentValues= "+(strField.toString() + strValue.toString()));
+//            return strField.toString() + strValue.toString();
+//        } else {
+//            Log.e("SqlInsert", "setContentValues= "+(strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString()));
+//            return strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString();
+//        }
         }
-        if (method == METHOD_INSERT) {
-            strField.deleteCharAt(strField.length() - 1).append(")");
-            strValue.deleteCharAt(strValue.length() - 1).append(")");
-            LogUtil.i(TAG, "DBImpl: setContentValues: [inerttttttttt]="
-                    + strField.toString() + strValue.toString());
-            return strField.toString() + strValue.toString();
-        } else {
-            LogUtil.i(TAG, "DBImpl: setContentValues: [inerttttttttt11]="
-                    + strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString());
-            return strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString();
-        }
+        return "";
     }
 
 }

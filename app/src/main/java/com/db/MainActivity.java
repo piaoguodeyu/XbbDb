@@ -9,6 +9,7 @@ import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.helper.DbModel;
 import com.xbbdb.test.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity {
@@ -17,9 +18,26 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        DbModel<User> model = DbFactory.getInstance().openSession(User.class);
-        List<User> list=model.queryList();
-        Log.e("MainActivity", "onCreate= "+list.toString());
-        model.insert(new User("777777","aaaaaaa8","009900"));
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DbModel<User> model = DbFactory.getInstance().openSession(User.class);
+                List<User> list = new ArrayList<>();
+                Log.e("MainActivity", "onCreate= " + list.toString());
+
+                for (int i = 0; i < 13000; i++) {
+                    User user = new User();
+                    user.setUserid(i + "");
+                    list.add(user);
+                }
+                model.deleteAll();
+                long time = System.currentTimeMillis();
+                Log.i("MainActivity", "onCreate11= " + time);
+                model.insertList(list);
+//                model.insert(new User());
+                Log.e("MainActivity", "onCreate11= " + (System.currentTimeMillis() - time));
+            }
+        }).start();
     }
 }
