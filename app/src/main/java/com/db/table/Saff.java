@@ -8,8 +8,8 @@ import com.xbbdb.orm.annotation.Table;
  */
 @Table(name = "Saff")
 public class Saff {
-    @Column(name = "userid")
-    String userid;
+    @Column(name = "useridStaff")
+    String useridStaff;
     @Column(name = "name")
     String name;
     @Column(name = "phone")
@@ -57,20 +57,20 @@ public class Saff {
     }
 
     public Saff(String userid, String name, String phone) {
-        this.userid = userid;
+        this.useridStaff = userid;
         this.name = name;
         this.phone = phone;
     }
 
     public Saff(String userid, String name) {
-        this.userid = userid;
+        this.useridStaff = userid;
         this.name = name;
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "userid='" + userid + '\'' +
+                "useridStaff='" + useridStaff + '\'' +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", alipay2='" + alipay + '\'' +
@@ -80,11 +80,11 @@ public class Saff {
     }
 
     public String getUserid() {
-        return userid;
+        return useridStaff;
     }
 
     public void setUserid(String userid) {
-        this.userid = userid;
+        this.useridStaff = userid;
     }
 
     public String getName() {

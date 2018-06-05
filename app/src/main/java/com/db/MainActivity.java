@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.db.table.Saff;
 import com.db.table.User;
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.helper.DbModel;
@@ -25,17 +26,34 @@ public class MainActivity extends Activity {
                 DbModel<User> model = DbFactory.getInstance().openSession(User.class);
                 List<User> list = new ArrayList<>();
                 Log.e("MainActivity", "onCreate= " + list.toString());
+//                model.deleteAll();
+//                for (int i = 0; i < 200; i++) {
+//                    User user = new User();
+//                    user.setUserid(i + "");
+//                    Saff saff=new Saff();
+//                    saff.setUserid(i + "");
+//                    user.setUseridStaff(saff);
+//                    list.add(user);
+//
+//                }
 
-                for (int i = 0; i < 13000; i++) {
-                    User user = new User();
-                    user.setUserid(i + "");
-                    list.add(user);
-                }
-                model.deleteAll();
                 long time = System.currentTimeMillis();
+                User user = new User();
+                user.setUserid("100");
+                user.setName("00700.hk");
+                user.setAlipay2("00700.hk");
+                user.setWx3("00700.hk");
+                user.setMitake("00700.hk");
+                user.setPhone("00700.hk");
+                Saff saff = new Saff();
+                saff.setUserid("100");
+                saff.setAlipay("00700.hk");
+                saff.setMitake("00700.hk");
+                saff.setName("00700.hk");
+                user.setUseridStaff(saff);
                 Log.i("MainActivity", "onCreate11= " + time);
-                model.insertList(list);
-//                model.insert(new User());
+                model.updateByColumn("userid", user);
+//                model.insertList(list);
                 Log.e("MainActivity", "onCreate11= " + (System.currentTimeMillis() - time));
             }
         }).start();

@@ -86,30 +86,30 @@ public class SqlUpdate<T> {
     }
 
 
-    public long update(String column, Object entity) {
+    public long update(String column, Object entity, List<Field> list, String tablename) {
         long rows = 0;
         try {
 
             if (entity == null) {
                 return rows;
             }
-            List<Field> list = getFiled(entity.getClass());
-            String tablename = getTableNeame(entity.getClass());
+//            List<Field> list = getFiled(entity.getClass());
+//            String tablename = getTableNeame(entity.getClass());
             ContentValues cv = new ContentValues();
             //注意返回的sql中包含主键列
-            String sql = setContentValues(entity, cv, TYPE_NOT_INCREMENT, METHOD_UPDATE);
+            String sql = setContentValues(entity, cv, list);
             String where = column + " = ?";
             String idValues = (String) cv.get(column);
             LogUtil.i(TAG, "DBImpl: execSql: [8888888899999]=" + idValues + "  sql= " + sql);
 
             String[] whereValue = {idValues};
 
-            rows = DbFactory.getInstance().openWriteDatabase().update(tablename, cv, where, whereValue);
+            rows = DbFactory.getInstance().getWriteDatabase().update(tablename, cv, where, whereValue);
 
             //获取关联域的操作类型和关系类型
             String foreignKey = null;
             String type = null;
-            String name = null;
+//            String name = null;
             //需要判断是否有关联表
             for (Field relationsDaoField : list) {
                 if (!relationsDaoField.isAnnotationPresent(RelationDao.class)) {
@@ -122,11 +122,17 @@ public class SqlUpdate<T> {
                 //关联类型
                 type = relationDao.type();
 
-                name = relationDao.name();
+//                name = relationDao.name();
                 //设置可访问
                 relationsDaoField.setAccessible(true);
                 if (RelationsType.one2one.equals(type)) {
-                    update(foreignKey, relationsDaoField.get(entity));
+                    /**
+                     * 获取关联表实体类
+                     */
+                    Object relationsObj = relationsDaoField.get(entity);
+                    List<Field> fieldList = getFiled(relationsObj.getClass());
+                    String tbname = getTableNeame(relationsObj.getClass());
+                    update(foreignKey, relationsObj, fieldList, tbname);
                 } else if (RelationsType.one2many.equals(type) || RelationsType.many2many.equals(type)) {
                     //一对多关系
                     //获取关联表的对象
@@ -134,8 +140,14 @@ public class SqlUpdate<T> {
                     if (list1 == null || list1.size() == 0) {
                         return rows;
                     }
+                    List<Field> fieldList = null;
+                    String tbname = null;
                     for (Object obj : list1) {
-                        rows += update(foreignKey, obj);
+                        if (fieldList == null) {
+                            fieldList = getFiled(obj.getClass());
+                            tbname = getTableNeame(obj.getClass());
+                        }
+                        rows += update(foreignKey, obj, fieldList, tbname);
                     }
                 }
             }
@@ -152,12 +164,12 @@ public class SqlUpdate<T> {
      * @param entityList 数据列表,ID主键
      * @return
      */
-    public long updateListAbs(List<T> entityList) {
+    public long updateListAbs(List<T> entityList, List<Field> list, String tablename) {
         long rows = -1;
         try {
             if (entityList != null && entityList.size() > 0) {
                 for (Object data : entityList) {
-                    rows += update(this.idColumn, data);
+                    rows += update(this.idColumn, data, list, tablename);
                 }
             }
         } catch (Exception e) {
@@ -173,20 +185,17 @@ public class SqlUpdate<T> {
      *
      * @param entity 映射实体
      * @param cv     the cv
-     * @param type   id类的类型，是否自增
-     * @param method 预执行的操作
      * @return sql的字符串
      * @throws IllegalAccessException the illegal access exception
      */
-    private String setContentValues(Object entity, ContentValues cv, int type,
-                                    int method) throws IllegalAccessException {
-        StringBuffer strField = new StringBuffer("(");
-        StringBuffer strValue = new StringBuffer(" values(");
-        StringBuffer strUpdate = new StringBuffer(" ");
+    private String setContentValues(Object entity, ContentValues cv, List<Field> allFields) throws IllegalAccessException {
+//        StringBuffer strField = new StringBuffer("(");
+//        StringBuffer strValue = new StringBuffer(" values(");
+//        StringBuffer strUpdate = new StringBuffer(" ");
 
         // 加载所有字段
-        List<Field> allFields = TableHelper.joinFields(entity.getClass().getDeclaredFields(),
-                entity.getClass().getSuperclass().getDeclaredFields());
+//        List<Field> allFields = TableHelper.joinFields(entity.getClass().getDeclaredFields(),
+//                entity.getClass().getSuperclass().getDeclaredFields());
         for (Field field : allFields) {
             if (!field.isAnnotationPresent(Column.class)) {
                 continue;
@@ -197,34 +206,29 @@ public class SqlUpdate<T> {
             Object fieldValue = field.get(entity);
             if (fieldValue == null)
                 continue;
-            // 处理java.util.Date类型,execSql
-            if (Date.class == field.getType()) {
-                // 2012-06-10
-                cv.put(column.name(), ((Date) fieldValue).getTime());
-                continue;
-            }
             String value = String.valueOf(fieldValue);
             cv.put(column.name(), value);
-            if (method == METHOD_INSERT) {
-                strField.append(column.name()).append(",");
-                strValue.append("'").append(value).append("',");
-            } else {
-                strUpdate.append(column.name()).append("=").append("'").append(
-                        value).append("',");
-            }
+//            if (method == METHOD_INSERT) {
+//                strField.append(column.name()).append(",");
+//                strValue.append("'").append(value).append("',");
+//            } else {
+//                strUpdate.append(column.name()).append("=").append("'").append(
+//                        value).append("',");
+//            }
 
         }
-        if (method == METHOD_INSERT) {
-            strField.deleteCharAt(strField.length() - 1).append(")");
-            strValue.deleteCharAt(strValue.length() - 1).append(")");
-            LogUtil.i(TAG, "DBImpl: setContentValues: [inerttttttttt]="
-                    + strField.toString() + strValue.toString());
-            return strField.toString() + strValue.toString();
-        } else {
-            LogUtil.i(TAG, "DBImpl: setContentValues: [inerttttttttt11]="
-                    + strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString());
-            return strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString();
-        }
+//        if (method == METHOD_INSERT) {
+//            strField.deleteCharAt(strField.length() - 1).append(")");
+//            strValue.deleteCharAt(strValue.length() - 1).append(")");
+//            LogUtil.i(TAG, "DBImpl: setContentValues: [inerttttttttt]="
+//                    + strField.toString() + strValue.toString());
+//            return strField.toString() + strValue.toString();
+//        } else {
+//            LogUtil.i(TAG, "DBImpl: setContentValues: [inerttttttttt11]="
+//                    + strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString());
+//            return strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString();
+//        }
+        return "";
     }
 
 }

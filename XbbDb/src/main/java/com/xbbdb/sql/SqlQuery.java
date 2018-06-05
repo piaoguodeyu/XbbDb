@@ -65,7 +65,7 @@ public class SqlQuery<T> {
         int count = 0;
         try {
             String sql = "select count(*) from " + this.mTableName;
-            SQLiteStatement statement = DbFactory.getInstance().openReadDatabase().compileStatement(sql);
+            SQLiteStatement statement = DbFactory.getInstance().getReadDatabase().compileStatement(sql);
             count = (int) statement.simpleQueryForLong();
         } catch (Exception e) {
             LogUtil.e(TAG, "[queryCount] from DB exception");
@@ -88,7 +88,7 @@ public class SqlQuery<T> {
         int count = 0;
         try {
             LogUtil.d(TAG, "[queryCount]: " + getLogSql(sql, selectionArgs));
-            cursor = DbFactory.getInstance().openReadDatabase().query(this.mTableName, null, sql, selectionArgs, null, null, null);
+            cursor = DbFactory.getInstance().getReadDatabase().query(this.mTableName, null, sql, selectionArgs, null, null, null);
             if (cursor != null) {
                 count = cursor.getCount();
             }
@@ -374,7 +374,7 @@ public class SqlQuery<T> {
             String tableName1 = getTableNeame(daoClasses);
             LogUtil.d(TAG, "[666666666] from " + tableName1 + " where " + where
                     + "(" + selectionArgs + ")" + " group by " + groupBy + " having " + having + " order by " + orderBy + " limit " + limit);
-            cursor = DbFactory.getInstance().openReadDatabase().query(tableName1, columns, where,
+            cursor = DbFactory.getInstance().getReadDatabase().query(tableName1, columns, where,
                     selectionArgs, groupBy, having, orderBy, limit);
             getListFromCursor(daoClasses, list, cursor);
             //获取关联域的操作类型和关系类型
@@ -401,7 +401,7 @@ public class SqlQuery<T> {
         List<Map<String, String>> retList = new ArrayList<Map<String, String>>();
         try {
             LogUtil.d(TAG, "[queryMapList]: " + getLogSql(sql, selectionArgs));
-            cursor = DbFactory.getInstance().openReadDatabase().rawQuery(sql, selectionArgs);
+            cursor = DbFactory.getInstance().getReadDatabase().rawQuery(sql, selectionArgs);
             while (cursor.moveToNext()) {
                 Map<String, String> map = new HashMap<String, String>();
                 for (String columnName : cursor.getColumnNames()) {
@@ -514,7 +514,7 @@ public class SqlQuery<T> {
         Cursor cursor = null;
         try {
             LogUtil.d(TAG, "[queryRaw]: " + getLogSql(sql, selectionArgs));
-            cursor = DbFactory.getInstance().openReadDatabase().rawQuery(sql, selectionArgs);
+            cursor = DbFactory.getInstance().getReadDatabase().rawQuery(sql, selectionArgs);
             getListFromCursor(clazz, list, cursor);
             //获取关联域的操作类型和关系类型
             queryList(this.clazz, list);

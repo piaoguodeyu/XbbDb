@@ -1,6 +1,8 @@
 package com.db.table;
 
 import com.xbbdb.orm.annotation.Column;
+import com.xbbdb.orm.annotation.RelationDao;
+import com.xbbdb.orm.annotation.RelationsType;
 import com.xbbdb.orm.annotation.Table;
 
 /**
@@ -24,6 +26,48 @@ public class User {
     String code = "00700.hk";
     @Column(name = "type")
     String type = "type";
+    @Column(name = "useridStaff")
+    @RelationDao(name = "userid",foreignKey = "useridStaff",type = RelationsType.one2one)
+    Saff useridStaff;
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Saff getUseridStaff() {
+        return useridStaff;
+    }
+
+    public void setUseridStaff(Saff useridStaff) {
+        this.useridStaff = useridStaff;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userid='" + userid + '\'' +
+                ", name='" + name + '\'' +
+                ", phone='" + phone + '\'' +
+                ", alipay2='" + alipay2 + '\'' +
+                ", wx3='" + wx3 + '\'' +
+                ", mitake='" + mitake + '\'' +
+                ", code='" + code + '\'' +
+                ", type='" + type + '\'' +
+                ", useridStaff=" + useridStaff +
+                '}';
+    }
 
     public String getMitake() {
         return mitake;
@@ -69,20 +113,6 @@ public class User {
     public User(String userid, String name) {
         this.userid = userid;
         this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "userid='" + userid + '\'' +
-                ", name='" + name + '\'' +
-                ", phone='" + phone + '\'' +
-                ", alipay2='" + alipay2 + '\'' +
-                ", wx3='" + wx3 + '\'' +
-                ", mitake='" + mitake + '\'' +
-                ", code='" + code + '\'' +
-                ", type='" + type + '\'' +
-                '}';
     }
 
     public String getUserid() {

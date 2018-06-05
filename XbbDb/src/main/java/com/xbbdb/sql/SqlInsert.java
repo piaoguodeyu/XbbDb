@@ -116,7 +116,7 @@ public class SqlInsert<T> {
             // 加载所有字段
             List<Field> allFields = TableHelper.joinFields(entity.getClass().getDeclaredFields(),
                     entity.getClass().getSuperclass().getDeclaredFields());
-            setContentValues(entity, cv, allFields, METHOD_INSERT);
+            setContentValues(entity, cv, allFields);
             String tablename = getTableNeame(entity.getClass());
             row = DbFactory.getInstance().getWriteDatabase().insert(tablename, null, cv);
 
@@ -185,80 +185,92 @@ public class SqlInsert<T> {
         long rows = 0;
         try {
             // 加载所有字段
-            boolean hasRelationsDao = false;
+            boolean hasRelationsDao = true;
+            /**
+             * 关联表的 列
+             */
+            Field relationfield = null;
+            String relationtype = null;
+
+            List<Field> fieldList = null;
             for (T entity : entityList) {
                 ContentValues cv = new ContentValues();
-                setContentValues(entity, cv, allFields, METHOD_INSERT);
+                setContentValues(entity, cv, allFields);
 //                LogUtil.d(TAG, "[insertList]: insert into " + this.mTableName + " " + sql);
                 rows += DbFactory.getInstance().getWriteDatabase().insert(this.mTableName, null, cv);
 
                 if (!hasRelationsDao) {
+
+                    //需要判断是否有关联表
+                    for (Field relationsDaoField : allFields) {
+                        if (!relationsDaoField.isAnnotationPresent(RelationDao.class)) {
+                            continue;
+                        }
+                        hasRelationsDao = true;
+                        RelationDao RelationsDao = relationsDaoField.getAnnotation(RelationDao.class);
+                        //获取外键列名
+//                    foreignKey = RelationsDao.foreignKey();
+                        //关联类型
+                        relationtype = RelationsDao.type();
+                        //设置可访问
+                        relationsDaoField.setAccessible(true);
+                        relationfield = relationsDaoField;
+                    }
                     continue;
                 }
                 //获取关联域的操作类型和关系类型
 //                String foreignKey = null;
-                String type = null;
-                Field field = null;
-                //需要判断是否有关联表
-                for (Field relationsDaoField : allFields) {
-                    if (!relationsDaoField.isAnnotationPresent(RelationDao.class)) {
-                        continue;
-                    }
-                    hasRelationsDao = true;
-                    RelationDao RelationsDao = relationsDaoField.getAnnotation(RelationDao.class);
-                    //获取外键列名
-//                    foreignKey = RelationsDao.foreignKey();
-                    //关联类型
-                    type = RelationsDao.type();
-                    //设置可访问
-                    relationsDaoField.setAccessible(true);
-                    field = relationsDaoField;
-                }
 
-                if (field == null) {
+
+                if (relationfield == null) {
+                    hasRelationsDao = false;
                     continue;
                 }
 
 
-                if (RelationsType.one2one.equals(type)) {
+                if (RelationsType.one2one.equals(relationtype)) {
                     //一对一关系
                     //获取关联表的对象
-                    Object relationsDaoEntity = field.get(entity);
+                    Object relationsDaoEntity = relationfield.get(entity);
                     if (relationsDaoEntity != null) {
-                        ContentValues RelationsDaoCv = new ContentValues();
+                        ContentValues relationsDaoCv = new ContentValues();
+                        if (fieldList == null) {
+                            fieldList = TableHelper.joinFields(relationsDaoEntity.getClass().getDeclaredFields(),
+                                    relationsDaoEntity.getClass().getSuperclass().getDeclaredFields());
 
-                        List<Field> fieldList = TableHelper.joinFields(relationsDaoEntity.getClass().getDeclaredFields(),
-                                relationsDaoEntity.getClass().getSuperclass().getDeclaredFields());
-                        setContentValues(relationsDaoEntity, RelationsDaoCv, fieldList, METHOD_INSERT);
-                        String RelationsDaoTableName = "";
+                        }
+                        setContentValues(relationsDaoEntity, relationsDaoCv, fieldList);
+                        String relationsDaoTableName = "";
                         if (relationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
                             Table table = relationsDaoEntity.getClass().getAnnotation(Table.class);
-                            RelationsDaoTableName = table.name();
+                            relationsDaoTableName = table.name();
                         }
 
 //                        LogUtil.d(TAG, "[insertList]: insert into " + RelationsDaoTableName + " " + sql);
-                        rows += DbFactory.getInstance().getWriteDatabase().insert(RelationsDaoTableName, null, RelationsDaoCv);
+                        rows += DbFactory.getInstance().getWriteDatabase().insert(relationsDaoTableName, null, relationsDaoCv);
                     }
 
-                } else if (RelationsType.one2many.equals(type) || RelationsType.many2many.equals(type)) {
+                } else if (RelationsType.one2many.equals(relationtype) || RelationsType.many2many.equals(relationtype)) {
                     //一对多关系
                     //获取关联表的对象
-                    List<Object> list = (List<Object>) field.get(entity);
+                    List<Object> list = (List<Object>) relationfield.get(entity);
                     if (list != null && list.size() > 0) {
                         for (Object relationsDaoEntity : list) {
-                            ContentValues RelationsDaoCv = new ContentValues();
-                            List<Field> fieldList = TableHelper.joinFields(relationsDaoEntity.getClass().getDeclaredFields(),
-                                    relationsDaoEntity.getClass().getSuperclass().getDeclaredFields());
+                            ContentValues contentValues = new ContentValues();
+                            if (fieldList == null) {
+                                fieldList = TableHelper.joinFields(relationsDaoEntity.getClass().getDeclaredFields(),
+                                        relationsDaoEntity.getClass().getSuperclass().getDeclaredFields());
 
-                            setContentValues(relationsDaoEntity, RelationsDaoCv, fieldList, METHOD_INSERT);
-                            String RelationsDaoTableName = "";
+                            }
+                            setContentValues(relationsDaoEntity, contentValues, fieldList);
+                            String relationsDaoTableName = "";
                             if (relationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
                                 Table table = relationsDaoEntity.getClass().getAnnotation(Table.class);
-                                RelationsDaoTableName = table.name();
+                                relationsDaoTableName = table.name();
                             }
 
-//                            LogUtil.d(TAG, "[insertList]: insert into " + RelationsDaoTableName + " " + sql);
-                            rows += DbFactory.getInstance().getWriteDatabase().insert(RelationsDaoTableName, null, RelationsDaoCv);
+//                            LogUtil.d(TAG, "[insertList]: insert into " + relationsDaoTableName + " " + sql);
+                            rows += DbFactory.getInstance().getWriteDatabase().insert(relationsDaoTableName, null, contentValues);
                         }
                     }
 
@@ -278,12 +290,11 @@ public class SqlInsert<T> {
      *
      * @param entity        映射实体
      * @param contentValues the cv
-     * @param method        预执行的操作
      * @return sql的字符串
      * @throws IllegalAccessException the illegal access exception
      */
-    private String setContentValues(Object entity, ContentValues contentValues, List<Field> allFields,
-                                    int method) throws IllegalAccessException {
+    private String setContentValues(Object entity, ContentValues contentValues, List<Field> allFields
+    ) throws IllegalAccessException {
 //        StringBuffer strField = new StringBuffer("(");
 //        StringBuffer strValue = new StringBuffer(" values(");
 //        StringBuffer strUpdate = new StringBuffer(" ");
@@ -295,10 +306,10 @@ public class SqlInsert<T> {
             Column column = field.getAnnotation(Column.class);
 
             field.setAccessible(true);
-            String value = (String) field.get(entity);
-            if (value == null)
+            Object fieldValue = field.get(entity);
+            if (fieldValue == null)
                 continue;
-//            String value = String.valueOf(fieldValue);
+            String value = String.valueOf(fieldValue);
             contentValues.put(column.name(), value);
 //            if (method == METHOD_INSERT) {
 //                strField.append(column.name()).append(",");
