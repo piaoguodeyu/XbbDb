@@ -70,7 +70,9 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         DbFactory.getInstance().onCreateWriteDatabase(db);
+        DbFactory.getInstance().openWriteDatabase();
         TableHelper.createTablesByClasses(db, this.modelClasses);
+        DbFactory.getInstance().closeWriteDatabase();
     }
 
     /**

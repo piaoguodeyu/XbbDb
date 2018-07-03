@@ -26,9 +26,9 @@ public class DbFactory extends DBHelper {
     /**
      * 读
      */
-    private SQLiteDatabase mReadDatabase;
+//    private SQLiteDatabase mWriteDatabase;
     private AtomicInteger mCountWrite = new AtomicInteger();
-    private AtomicInteger mCountRead = new AtomicInteger();
+    //    private AtomicInteger mCountWrite = new AtomicInteger();
     // 数据库名
     private static String DBNAME;
     // 当前数据库的版本
@@ -69,63 +69,29 @@ public class DbFactory extends DBHelper {
     }
 
     /**
-     * 关闭数据库
-     */
-    public boolean canCloseReadDb() {
-        if (mCountRead.get() == 0) {
-            return true;
-        }
-        return mCountRead.decrementAndGet() == 0;
-    }
-
-    /**
      * 计算访问数据库库个数
      */
     private boolean writeDbIsOpen() {
         return mCountWrite.get() == 0;
     }
 
-    /**
-     * 计算访问数据库库个数
-     */
-    private boolean readDbIsOpen() {
-        return mCountRead.get() == 0;
-    }
-
     public SQLiteDatabase openReadDatabase() {
-        synchronized (DbFactory.class) {
-            try {
-                mCountRead.incrementAndGet();
-                if (mReadDatabase == null || !mReadDatabase.isOpen() && !readDbIsOpen()) {
-                    mReadDatabase = getReadableDatabase();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                LogUtil.i(TAG, "DbFactory: openWriteDatabase: []="
-                        + e);
-            }
-
-
-            return mReadDatabase;
-        }
+        return openWriteDatabase();
     }
 
     /**
      * @return
      */
     public SQLiteDatabase getReadDatabase() {
-        return mReadDatabase;
+        return getWriteDatabase();
     }
 
     public SQLiteDatabase getWriteDatabase() {
         return mWriteDatabase;
     }
 
-    public void onCreateWriteDatabase(SQLiteDatabase db) {
-        synchronized (DBHelper.class) {
-            mWriteDatabase = db;
-            mReadDatabase = db;
-        }
+    public synchronized void onCreateWriteDatabase(SQLiteDatabase db) {
+        mWriteDatabase = db;
     }
 
     /**
@@ -133,68 +99,47 @@ public class DbFactory extends DBHelper {
      *
      * @return
      */
-    public SQLiteDatabase openWriteDatabase() {
-        synchronized (DBHelper.class) {
-            try {
-                mCountWrite.incrementAndGet();
-                if (mWriteDatabase == null || !mWriteDatabase.isOpen() && !writeDbIsOpen()) {
-                    mWriteDatabase = getWritableDatabase();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                LogUtil.i(TAG, "DbFactory: openWriteDatabase: []="
-                        + e);
+    public synchronized SQLiteDatabase openWriteDatabase() {
+        try {
+            mCountWrite.incrementAndGet();
+            if (mWriteDatabase == null || !mWriteDatabase.isOpen() && !writeDbIsOpen()) {
+                mWriteDatabase = getWritableDatabase();
             }
-            return mWriteDatabase;
+        } catch (Exception e) {
+            e.printStackTrace();
+            LogUtil.i(TAG, "DbFactory: openWriteDatabase: []="
+                    + e);
         }
-
+        return mWriteDatabase;
     }
 
     /**
      * 关闭写数据库
      */
-    public void closeWriteDatabase() {
-        synchronized (TAG) {
-            try {
-                if (canCloseWriteDb()) {
-                    if (mWriteDatabase != null) {
-                        LogUtil.i(TAG, "DBImpl: closeWriteDatabase: [ddddddd]="
-                                + mWriteDatabase.isOpen() + "   " + writeDbIsOpen());
-                        if (mWriteDatabase.isOpen()) {
-                            mWriteDatabase.close();
-                            mWriteDatabase = null;
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                LogUtil.i(TAG, "DBImpl: closeWriteDatabase: [transaction]="
-                        + e);
-            }
-        }
-
-    }
-
-    /**
-     * 关闭读数据库
-     */
-    public synchronized void closeReadDatabase() {
+    public synchronized void closeWriteDatabase() {
         try {
-            if (canCloseReadDb()) {
-                if (mReadDatabase != null) {
-                    LogUtil.i(TAG, "DBImpl: closeReadDatabase: [ddddddd]="
-                            + mReadDatabase.isOpen() + "   " + readDbIsOpen());
-                    if (mReadDatabase.isOpen()) {
-                        mReadDatabase.close();
-                        mReadDatabase = null;
+            if (canCloseWriteDb()) {
+                if (mWriteDatabase != null) {
+                    LogUtil.i(TAG, "DBImpl: closeWriteDatabase: [ddddddd]="
+                            + mWriteDatabase.isOpen() + "   " + writeDbIsOpen());
+                    if (mWriteDatabase.isOpen()) {
+                        mWriteDatabase.close();
+                        mWriteDatabase = null;
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(TAG, "DBImpl: closeReadDatabase: [transaction]="
+            LogUtil.i(TAG, "DBImpl: closeWriteDatabase: [transaction]="
                     + e);
         }
+    }
+
+    /**
+     * 关闭读数据库
+     */
+    public void closeReadDatabase() {
+        closeWriteDatabase();
     }
 
     public <T> DbModel<T> openSession(Class<T> dbModel) {

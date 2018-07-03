@@ -6,6 +6,7 @@ import com.db.table.Saff;
 import com.db.table.User;
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.global.DbConfig;
+import com.xbbdb.orm.helper.DbModel;
 
 
 /**
@@ -21,8 +22,15 @@ public class MyApp extends Application {
         super.onCreate();
         DbConfig config = new DbConfig();
         config.setContext(getApplicationContext())
-                .setDBNAME("xbb").setDBVERSION(16)
+                .setDBNAME("test.db").setDBVERSION(16)
                 .setClazz(clazz);
         DbFactory.init(config);
+//        try {
+//            DbModel<User> model = DbFactory.getInstance().openSession(User.class);
+//            model.queryList();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
     }
 }
