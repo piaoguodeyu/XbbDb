@@ -94,6 +94,18 @@ public class DbModel<T> extends DBImpl<T> {
     /**
      * 分页查询
      *
+     * @return
+     */
+    public List<T> queryList(String limit) {
+        startReadableDatabase();
+        List<T> result = super.queryListAbs(limit);
+        closeReadDatabase();
+        return result;
+    }
+
+    /**
+     * 分页查询
+     *
      * @param page
      * @param pageSize
      * @return

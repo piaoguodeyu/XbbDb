@@ -149,7 +149,7 @@ public class SqlInsert<T> {
 
                     if (relationsDaoEntity != null) {
                         if (relationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
-                            row += insertAbs(relationsDaoEntity, true);
+                            row = insertAbs(relationsDaoEntity, true);
                         }
                     }
                 } else if (RelationsType.one2many.equals(type) || RelationsType.many2many.equals(type)) {
@@ -159,7 +159,7 @@ public class SqlInsert<T> {
                     if (list != null && list.size() > 0) {
                         for (Object relationsDaoEntity : list) {
                             if (relationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
-                                row += insertAbs(relationsDaoEntity, true);
+                                row = insertAbs(relationsDaoEntity, true);
 
                             }
                         }

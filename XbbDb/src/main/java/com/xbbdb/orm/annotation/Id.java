@@ -26,4 +26,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target( { java.lang.annotation.ElementType.FIELD })
 public @interface Id {
+    /**
+     * 列名.
+     *
+     * @return the string
+     */
+    String name();
 }

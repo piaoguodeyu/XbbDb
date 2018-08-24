@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2013 www.418log.org
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,13 +20,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.annotation.Column;
+import com.xbbdb.orm.annotation.Id;
 import com.xbbdb.orm.annotation.Table;
-import com.xbbdb.utils.LogUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -41,7 +40,6 @@ import java.util.Map;
  * @version v3.0
  */
 public class DBHelper extends SQLiteOpenHelper {
-    private final String TAG = DBHelper.class.getSimpleName();
     /**
      * The model classes.
      */
@@ -71,7 +69,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         DbFactory.getInstance().onCreateWriteDatabase(db);
         DbFactory.getInstance().openWriteDatabase();
-        TableHelper.createTablesByClasses(db, this.modelClasses);
+        TableHelper.createTablesByClasses(this.modelClasses);
         DbFactory.getInstance().closeWriteDatabase();
     }
 
@@ -85,8 +83,6 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        LogUtil.e(TAG, "DbFactory: onUpgrade: [uuuuuuu]="
-                + "  oldVersion=" + oldVersion + "  newVersion" + newVersion);
         try {
             Map<String, Class<?>> hashMap = new HashMap<>();
             for (Class<?> clazz : modelClasses) {
@@ -111,11 +107,6 @@ public class DBHelper extends SQLiteOpenHelper {
             Table table = daoClasses.getAnnotation(Table.class);
             tablename = table.name();
         }
-        if (TextUtils.isEmpty(tablename)) {
-            LogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
-                    + "想要映射的实体[" + daoClasses.getName() + "],未注解@Table(name=\"?\"),被跳过");
-
-        }
         return tablename;
     }
 
@@ -131,7 +122,17 @@ public class DBHelper extends SQLiteOpenHelper {
                 String tablename = cursor.getString(0);
                 Class claColum = hashMap.get(tablename);
                 if (claColum == null) {
-                    db.execSQL("DROP TABLE IF EXISTS " + tablename);
+                    if ("android_metadata".equals(tablename) || "sqlite_sequence".equals(tablename)) {
+                        continue;
+                    }
+                    /**
+                     * 说明该表被删了
+                     */
+                    try {
+                        db.execSQL("DROP TABLE IF EXISTS " + tablename);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     hashMap.remove(tablename);
                     List<String> temp = getColumns(db, tablename);
@@ -144,7 +145,11 @@ public class DBHelper extends SQLiteOpenHelper {
                             StringBuilder builder = new StringBuilder("alter table ");
                             builder.append(tablename).append(" add column");
                             builder.append(" ").append(colum).append(" TEXT");
-                            db.execSQL(builder.toString());
+                            try {
+                                db.execSQL(builder.toString());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                     listColum.removeAll(temp);
@@ -153,7 +158,11 @@ public class DBHelper extends SQLiteOpenHelper {
                             StringBuilder builder = new StringBuilder("alter table ");
                             builder.append(tablename).append(" drop column");
                             builder.append(" ").append(colum);
-                            db.execSQL(builder.toString());
+                            try {
+                                db.execSQL(builder.toString());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
 
@@ -174,12 +183,17 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private List<String> getColumns(Class daoClasses) {
         List<String> list = new ArrayList<>();
-        List<Field> allFields = TableHelper.joinFieldsOnlyColumn(daoClasses.getDeclaredFields(), daoClasses.getSuperclass().getDeclaredFields());
+        List<Field> allFields = TableHelper.joinFieldsOnlyColumn(daoClasses);
         if (allFields == null) {
             return list;
         }
         for (int i = 0; i < allFields.size(); i++) {
             Field field = allFields.get(i);
+            if (field.isAnnotationPresent(Id.class)) {
+                Id column = field.getAnnotation(Id.class);
+                list.add(column.name());
+                continue;
+            }
             if (!field.isAnnotationPresent(Column.class)) {
                 continue;
             }

@@ -14,23 +14,19 @@ import com.xbbdb.orm.helper.DbModel;
  */
 
 public class MyApp extends Application {
-
     private Class<?>[] clazz = {User.class, Saff.class};
-
     @Override
     public void onCreate() {
         super.onCreate();
         DbConfig config = new DbConfig();
         config.setContext(getApplicationContext())
-                .setDBNAME("test.db").setDBVERSION(16)
+                .setDBNAME("test.db").setDBVERSION(1)
                 .setClazz(clazz);
         DbFactory.init(config);
-//        try {
-//            DbModel<User> model = DbFactory.getInstance().openSession(User.class);
-//            model.queryList();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
+        DbModel<User> dbModel=DbFactory.getInstance().openSession(User.class);
+        dbModel.queryList();
+        dbModel.deleteOne(new User());
+        dbModel.update(new User());
+        dbModel.insert(new User());
     }
 }

@@ -353,6 +353,10 @@ public class DBImpl<T> {
         LogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
         return (List<T>) new SqlQuery<T>(this.clazz, this.allFields, this.mTableName, this.idColumn).queryListAbs(this.clazz, null, null, null, null, null, null, limit);
     }
+    protected List<T> queryListAbs(String limit) {
+        LogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
+        return (List<T>) new SqlQuery<T>(this.clazz, this.allFields, this.mTableName, this.idColumn).queryListAbs(this.clazz, null, null, null, null, null, null, limit);
+    }
 
     /**
      * 描述：查询列表.
