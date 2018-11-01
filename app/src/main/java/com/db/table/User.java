@@ -1,6 +1,7 @@
 package com.db.table;
 
 import com.xbbdb.orm.annotation.Column;
+import com.xbbdb.orm.annotation.Id;
 import com.xbbdb.orm.annotation.RelationDao;
 import com.xbbdb.orm.annotation.RelationsType;
 import com.xbbdb.orm.annotation.Table;
@@ -10,6 +11,7 @@ import com.xbbdb.orm.annotation.Table;
  */
 @Table(name = "User")
 public class User {
+    @Id(name = "userid")
     @Column(name = "userid")
     String userid = "60000";
     @Column(name = "name")

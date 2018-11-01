@@ -27,5 +27,5 @@ dependencies {
     implementation 'com.github.piaoguodeyu:xbbbus:1.0.1'
     //    implementation 'com.github.piaoguodeyu:xbbdb:2.0.0'
     implementation project(':XbbDb')
-    implementation files('libs/classes.jar')
+//    implementation files('libs/classes.jar')
 }

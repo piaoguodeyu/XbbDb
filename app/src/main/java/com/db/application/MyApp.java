@@ -20,7 +20,7 @@ public class MyApp extends Application {
         super.onCreate();
         DbConfig config = new DbConfig();
         config.setContext(getApplicationContext())
-                .setDBNAME("test.db").setDBVERSION(1)
+                .setDBNAME("test.db").setDBVERSION(18)
                 .setClazz(clazz);
         DbFactory.init(config);
         DbModel<User> dbModel=DbFactory.getInstance().openSession(User.class);

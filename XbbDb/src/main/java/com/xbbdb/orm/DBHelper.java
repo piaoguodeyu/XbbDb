@@ -73,6 +73,11 @@ public class DBHelper extends SQLiteOpenHelper {
         DbFactory.getInstance().closeWriteDatabase();
     }
 
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        onUpgrade(db, oldVersion, newVersion);
+    }
+
     /**
      * 描述：表的重建.
      *
@@ -81,6 +86,7 @@ public class DBHelper extends SQLiteOpenHelper {
      * @param newVersion 新版本号
      *                   int, int)
      */
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         try {

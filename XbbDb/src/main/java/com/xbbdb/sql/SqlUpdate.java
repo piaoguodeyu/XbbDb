@@ -12,7 +12,6 @@ import com.xbbdb.orm.annotation.Table;
 import com.xbbdb.utils.LogUtil;
 
 import java.lang.reflect.Field;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -81,8 +80,7 @@ public class SqlUpdate<T> {
      */
     private List<Field> getFiled(Class<?> daoClasses) {
         // 加载所有字段
-        return TableHelper.joinFields(daoClasses.getDeclaredFields(),
-                daoClasses.getSuperclass().getDeclaredFields());
+        return TableHelper.joinFieldsOnlyColumn(daoClasses);
     }
 
 
@@ -130,6 +128,9 @@ public class SqlUpdate<T> {
                      * 获取关联表实体类
                      */
                     Object relationsObj = relationsDaoField.get(entity);
+                    if (relationsObj == null) {
+                        continue;
+                    }
                     List<Field> fieldList = getFiled(relationsObj.getClass());
                     String tbname = getTableNeame(relationsObj.getClass());
                     update(foreignKey, relationsObj, fieldList, tbname);

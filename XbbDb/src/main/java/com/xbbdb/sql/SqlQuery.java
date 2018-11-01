@@ -272,8 +272,7 @@ public class SqlQuery<T> {
         while (cursor.moveToNext()) {
             Object entity = clazz.newInstance();
             // 加载所有字段
-            List<Field> allFields = TableHelper.joinFields(entity.getClass().getDeclaredFields(),
-                    entity.getClass().getSuperclass().getDeclaredFields());
+            List<Field> allFields = TableHelper.joinFieldsOnlyColumn(entity.getClass());
 
 
             for (Field field : allFields) {
@@ -536,8 +535,7 @@ public class SqlQuery<T> {
      */
     private List<Field> getFiled(Class<?> daoClasses) {
         // 加载所有字段
-        return TableHelper.joinFields(daoClasses.getDeclaredFields(),
-                daoClasses.getSuperclass().getDeclaredFields());
+        return TableHelper.joinFieldsOnlyColumn(daoClasses);
     }
 
     /**

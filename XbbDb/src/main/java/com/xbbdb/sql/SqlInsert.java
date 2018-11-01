@@ -2,7 +2,6 @@ package com.xbbdb.sql;
 
 import android.content.ContentValues;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.TableHelper;
@@ -86,8 +85,7 @@ public class SqlInsert<T> {
      */
     private List<Field> getFiled(Class<?> daoClasses) {
         // 加载所有字段
-        return TableHelper.joinFields(daoClasses.getDeclaredFields(),
-                daoClasses.getSuperclass().getDeclaredFields());
+        return TableHelper.joinFieldsOnlyColumn(daoClasses);
     }
 
     /**
@@ -114,8 +112,7 @@ public class SqlInsert<T> {
         try {
             ContentValues cv = new ContentValues();
             // 加载所有字段
-            List<Field> allFields = TableHelper.joinFields(entity.getClass().getDeclaredFields(),
-                    entity.getClass().getSuperclass().getDeclaredFields());
+            List<Field> allFields = TableHelper.joinFieldsOnlyColumn(entity.getClass());
             setContentValues(entity, cv, allFields);
             String tablename = getTableNeame(entity.getClass());
             row = DbFactory.getInstance().getWriteDatabase().insert(tablename, null, cv);
@@ -235,8 +232,7 @@ public class SqlInsert<T> {
                     if (relationsDaoEntity != null) {
                         ContentValues relationsDaoCv = new ContentValues();
                         if (fieldList == null) {
-                            fieldList = TableHelper.joinFields(relationsDaoEntity.getClass().getDeclaredFields(),
-                                    relationsDaoEntity.getClass().getSuperclass().getDeclaredFields());
+                            fieldList = TableHelper.joinFieldsOnlyColumn(relationsDaoEntity.getClass());
 
                         }
                         setContentValues(relationsDaoEntity, relationsDaoCv, fieldList);
@@ -258,8 +254,7 @@ public class SqlInsert<T> {
                         for (Object relationsDaoEntity : list) {
                             ContentValues contentValues = new ContentValues();
                             if (fieldList == null) {
-                                fieldList = TableHelper.joinFields(relationsDaoEntity.getClass().getDeclaredFields(),
-                                        relationsDaoEntity.getClass().getSuperclass().getDeclaredFields());
+                                fieldList = TableHelper.joinFieldsOnlyColumn(relationsDaoEntity.getClass());
 
                             }
                             setContentValues(relationsDaoEntity, contentValues, fieldList);

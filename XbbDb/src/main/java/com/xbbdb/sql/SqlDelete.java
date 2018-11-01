@@ -433,8 +433,7 @@ public class SqlDelete<T> {
      */
     private List<Field> getFiled(Class<?> daoClasses) {
         // 加载所有字段
-        return TableHelper.joinFields(daoClasses.getDeclaredFields(),
-                daoClasses.getSuperclass().getDeclaredFields());
+        return TableHelper.joinFieldsOnlyColumn(daoClasses);
     }
 
     /**

@@ -105,8 +105,7 @@ public class DBImpl<T> {
         }
 
         // 加载所有字段
-        this.allFields = TableHelper.joinFields(this.clazz.getDeclaredFields(),
-                this.clazz.getSuperclass().getDeclaredFields());
+        this.allFields = TableHelper.joinFieldsOnlyColumn(this.clazz);
 
         // 找到主键
         for (Field field : this.allFields) {
