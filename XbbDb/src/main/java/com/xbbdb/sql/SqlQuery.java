@@ -3,6 +3,7 @@ package com.xbbdb.sql;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.TableHelper;
@@ -103,19 +104,24 @@ public class SqlQuery<T> {
 
     public boolean queryList(Class<?> daoClasses, List<Object> list) throws IllegalAccessException {
         List<Field> allfield = getFiled(daoClasses);
+        HashMap<String, Field> hashMap = new HashMap<>();
+        Field fieldReleation = null;
+        String foreignKey = null;
+        String type = null;
+        /**
+         * 父类列表属性与外键对应
+         */
+        String name = null;
         //需要判断是否有关联表
         for (Field childField : allfield) {
-            String foreignKey = null;
-            String type = null;
-            /**
-             * 父类列表属性与外键对应
-             */
-            String name = null;
-
+            childField.setAccessible(true);
+            Column column = childField.getAnnotation(Column.class);
+            if (column != null) {
+                hashMap.put(column.name(), childField);
+            }
             if (!childField.isAnnotationPresent(RelationDao.class)) {
                 continue;
             }
-
             RelationDao relationDao = childField.getAnnotation(RelationDao.class);
             //获取外键列名
             foreignKey = relationDao.foreignKey();
@@ -127,119 +133,81 @@ public class SqlQuery<T> {
             childField.setAccessible(true);
 
             //得到关联表的表名查询
-            for (Object entity : list) {
+            fieldReleation = childField;
+        }
+        if (fieldReleation == null) {
+            return false;
+        }
+        for (Object entity : list) {
 
-                LogUtil.i(TAG, "DBImpl: queryListAbs: [llllllll]="
-                        + entity);
-                if (RelationsType.one2one.equals(type)) {
-                    //一对一关系
-                    //获取这个实体的表名
-                    if (!childField.getType().isAnnotationPresent(Table.class)) {
-                        break;
-                    }
-
-                    List<Object> relationsDaoList = new ArrayList<Object>();
-                    Field[] relationsDaoEntityFields = childField.getType().getDeclaredFields();
-                    datafield:
-                    for (Field relationsDaoEntityField : relationsDaoEntityFields) {
-                        relationsDaoEntityField.setAccessible(true);
-                        Column relationsDaoEntityColumn = relationsDaoEntityField.getAnnotation(Column.class);
-                        if (relationsDaoEntityColumn == null) {
-                            LogUtil.i(TAG, "DBImpl: queryList:00000000000");
-                            continue;
-                        }
-                        //获取外键的值作为关联表的查询条件
-                        if (foreignKey.equals(relationsDaoEntityColumn.name())) {
-                            //主表的用于关联表的foreignKey值
-                            String value = "-1";
-
-                            List<Field> prentfiled = getFiled(entity.getClass());
-                            for (Field pFiled : prentfiled) {
-
-                                if (!pFiled.isAnnotationPresent(Column.class)) {
-                                    continue;
-                                }
-                                Column relationDao5 = pFiled.getAnnotation(Column.class);
-                                //操作类型
-                                String attributeName = relationDao5.name();
-                                if (name.equals(attributeName)) {
-                                    //设置可访问
-                                    pFiled.setAccessible(true);
-                                    value = String.valueOf(pFiled.get(entity));
-                                    LogUtil.i(TAG, "DBImpl: queryListAbs: [vvvvvvvvv]="
-                                            + value);
-
-                                    relationsDaoList = queryRelation(childField.getType(), foreignKey, value);
-                                    //查询数据设置给这个域
-                                    if (relationsDaoList.size() > 0) {
-                                        //获取关联表的对象设置值
-                                        childField.set(entity, relationsDaoList.get(0));
-                                    }
-                                    break datafield;
-                                }
-
-                            }
-
-
-                        }
-                    }
-
-                } else if (RelationsType.one2many.equals(type) || RelationsType.many2many.equals(type)) {
-                    //得到泛型里的class类型对象
-                    Class listEntityClazz = null;
-                    Class<?> fieldClass = childField.getType();
-                    if (fieldClass.isAssignableFrom(List.class)) {
-                        Type fc = childField.getGenericType();
-                        if (fc == null) continue;
-                        if (fc instanceof ParameterizedType) {
-                            ParameterizedType pt = (ParameterizedType) fc;
-                            listEntityClazz = (Class) pt.getActualTypeArguments()[0];
-                        }
-                    }
-
-                    if (listEntityClazz == null) {
-                        LogUtil.e(TAG, "对象模型需要设置List的泛型");
-                        return true;
-                    }
-
-                    List<Object> relationsDaoList = new ArrayList<Object>();
-                    Field[] declaredFields = listEntityClazz.getDeclaredFields();
-                    datafield:
-                    for (Field field : declaredFields) {
-                        field.setAccessible(true);
-                        Column relationsDaoEntityColumn = field.getAnnotation(Column.class);
-                        //获取外键的值作为关联表的查询条件
-                        if (relationsDaoEntityColumn != null && relationsDaoEntityColumn.name().equals(foreignKey)) {
-                            String value = "-1";
-                            List<Field> prentfiled = getFiled(entity.getClass());
-                            for (Field pFiled : prentfiled) {
-                                if (!pFiled.isAnnotationPresent(Column.class)) {
-                                    continue;
-                                }
-                                Column relationDao5 = pFiled.getAnnotation(Column.class);
-                                //操作类型
-                                String attributeName = relationDao5.name();
-                                if (name.equals(attributeName)) {
-                                    //设置可访问
-                                    pFiled.setAccessible(true);
-                                    value = String.valueOf(pFiled.get(entity));
-                                    LogUtil.i(TAG, "DBImpl: queryListAbs: [vvvvvvvvv]="
-                                            + value);
-                                    relationsDaoList = queryRelation(listEntityClazz, foreignKey, value);
-                                    //查询数据设置给这个域
-                                    if (relationsDaoList.size() > 0) {
-                                        //获取关联表的对象设置值
-                                        childField.set(entity, relationsDaoList);
-                                    }
-                                    break datafield;
-                                }
-
-                            }
-
-                        }
-                    }
-
+            LogUtil.i(TAG, "DBImpl: queryListAbs: [llllllll]="
+                    + entity);
+            if (RelationsType.one2one.equals(type)) {
+                Field fieldParent = hashMap.get(name);
+                Object filedValue = fieldParent.get(entity);
+                String data1 = String.valueOf(filedValue);
+                List<Object> relationsDaoList = new ArrayList<Object>();
+                relationsDaoList = queryRelation(fieldReleation.getType(), foreignKey, data1);
+                //查询数据设置给这个域
+                if (relationsDaoList.size() > 0) {
+                    fieldReleation.setAccessible(true);
+                    //获取关联表的对象设置值
+                    fieldReleation.set(entity, relationsDaoList.get(0));
                 }
+
+            } else if (RelationsType.one2many.equals(type) || RelationsType.many2many.equals(type)) {
+                //得到泛型里的class类型对象
+                Class listEntityClazz = null;
+                Class<?> fieldClass = fieldReleation.getType();
+                if (fieldClass.isAssignableFrom(List.class)) {
+                    Type fc = fieldReleation.getGenericType();
+                    if (fc == null) continue;
+                    if (fc instanceof ParameterizedType) {
+                        ParameterizedType pt = (ParameterizedType) fc;
+                        listEntityClazz = (Class) pt.getActualTypeArguments()[0];
+                    }
+                }
+                if (listEntityClazz == null) {
+                    LogUtil.e(TAG, "对象模型需要设置List的泛型");
+                    return true;
+                }
+                List<Object> relationsDaoList = new ArrayList<Object>();
+                Field[] declaredFields = listEntityClazz.getDeclaredFields();
+                datafield:
+                for (Field field : declaredFields) {
+                    field.setAccessible(true);
+                    Column relationsDaoEntityColumn = field.getAnnotation(Column.class);
+                    //获取外键的值作为关联表的查询条件
+                    if (relationsDaoEntityColumn != null && relationsDaoEntityColumn.name().equals(foreignKey)) {
+                        String value = "-1";
+                        List<Field> prentfiled = getFiled(entity.getClass());
+                        for (Field pFiled : prentfiled) {
+                            if (!pFiled.isAnnotationPresent(Column.class)) {
+                                continue;
+                            }
+                            Column relationDao5 = pFiled.getAnnotation(Column.class);
+                            //操作类型
+                            String attributeName = relationDao5.name();
+                            if (name.equals(attributeName)) {
+                                //设置可访问
+                                pFiled.setAccessible(true);
+                                value = String.valueOf(pFiled.get(entity));
+                                LogUtil.i(TAG, "DBImpl: queryListAbs: [vvvvvvvvv]="
+                                        + value);
+                                relationsDaoList = queryRelation(listEntityClazz, foreignKey, value);
+                                //查询数据设置给这个域
+                                if (relationsDaoList.size() > 0) {
+                                    //获取关联表的对象设置值
+                                    fieldReleation.set(entity, relationsDaoList);
+                                }
+                                break datafield;
+                            }
+
+                        }
+
+                    }
+                }
+
             }
         }
         return false;

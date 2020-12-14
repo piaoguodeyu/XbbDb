@@ -13,7 +13,7 @@ import com.xbbdb.orm.annotation.Table;
 public class User {
     @Id(name = "userid")
     @Column(name = "userid")
-    String userid = "60000";
+    String userid;
     @Column(name = "name")
     String name = "大秦帝国";
     @Column(name = "phone")

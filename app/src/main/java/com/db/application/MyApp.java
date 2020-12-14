@@ -23,10 +23,10 @@ public class MyApp extends Application {
                 .setDBNAME("test.db").setDBVERSION(18)
                 .setClazz(clazz);
         DbFactory.init(config);
-        DbModel<User> dbModel=DbFactory.getInstance().openSession(User.class);
-        dbModel.queryList();
-        dbModel.deleteOne(new User());
-        dbModel.update(new User());
-        dbModel.insert(new User());
+//        DbModel<User> dbModel=DbFactory.getInstance().openSession(User.class);
+//        dbModel.queryList();
+//        dbModel.deleteOne(new User());
+//        dbModel.update(new User());
+//        dbModel.insert(new User());
     }
 }

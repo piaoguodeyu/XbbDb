@@ -69,7 +69,7 @@ public class Saff {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "Saff{" +
                 "useridStaff='" + useridStaff + '\'' +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +

@@ -2,6 +2,7 @@ package com.xbbdb.sql;
 
 import android.content.ContentValues;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.TableHelper;
@@ -182,7 +183,6 @@ public class SqlInsert<T> {
         long rows = 0;
         try {
             // 加载所有字段
-            boolean hasRelationsDao = true;
             /**
              * 关联表的 列
              */
@@ -192,32 +192,19 @@ public class SqlInsert<T> {
             List<Field> fieldList = null;
             for (T entity : entityList) {
                 ContentValues cv = new ContentValues();
-                setContentValues(entity, cv, allFields);
+                relationfield = setContentValues(entity, cv, allFields);
 //                LogUtil.d(TAG, "[insertList]: insert into " + this.mTableName + " " + sql);
                 rows += DbFactory.getInstance().getWriteDatabase().insert(this.mTableName, null, cv);
 
-                if (hasRelationsDao) {
-                    if (relationfield == null) {
-                        //需要判断是否有关联表
-                        for (Field relationsDaoField : allFields) {
-                            if (!relationsDaoField.isAnnotationPresent(RelationDao.class)) {
-                                continue;
-                            }
-                            hasRelationsDao = true;
-                            RelationDao RelationsDao = relationsDaoField.getAnnotation(RelationDao.class);
-                            //获取外键列名
+                if (relationfield != null && relationtype == null) {
+                    //需要判断是否有关联表
+                    RelationDao relationDao = relationfield.getAnnotation(RelationDao.class);
+                    //获取外键列名
 //                    foreignKey = RelationsDao.foreignKey();
-                            //关联类型
-                            relationtype = RelationsDao.type();
-                            //设置可访问
-                            relationsDaoField.setAccessible(true);
-                            relationfield = relationsDaoField;
-                        }
-                    }
-                    if (relationfield == null) {
-                        hasRelationsDao = false;
-                        continue;
-                    }
+                    //关联类型
+                    relationtype = relationDao.type();
+                    //设置可访问
+                    relationfield.setAccessible(true);
                 } else {
                     continue;
                 }
@@ -270,7 +257,7 @@ public class SqlInsert<T> {
                 }
             }
         } catch (Exception e) {
-            LogUtil.d(this.TAG, "[insertList] into DB Exception." + e.toString());
+            LogUtil.d(this.TAG, "[insertList] into DB Exception." + e);
             e.printStackTrace();
         } finally {
         }
@@ -286,12 +273,9 @@ public class SqlInsert<T> {
      * @return sql的字符串
      * @throws IllegalAccessException the illegal access exception
      */
-    private String setContentValues(Object entity, ContentValues contentValues, List<Field> allFields
+    private Field setContentValues(Object entity, ContentValues contentValues, List<Field> allFields
     ) throws IllegalAccessException {
-//        StringBuffer strField = new StringBuffer("(");
-//        StringBuffer strValue = new StringBuffer(" values(");
-//        StringBuffer strUpdate = new StringBuffer(" ");
-
+        Field fieldRelationDao = null;
         for (Field field : allFields) {
             if (!field.isAnnotationPresent(Column.class)) {
                 continue;
@@ -302,28 +286,15 @@ public class SqlInsert<T> {
             Object fieldValue = field.get(entity);
             if (fieldValue == null)
                 continue;
+            RelationDao columnRelationDao = field.getAnnotation(RelationDao.class);
+            if (columnRelationDao != null) {
+                fieldRelationDao = field;
+                continue;
+            }
             String value = String.valueOf(fieldValue);
             contentValues.put(column.name(), value);
-//            if (method == METHOD_INSERT) {
-//                strField.append(column.name()).append(",");
-//                strValue.append("'").append(value).append("',");
-//            } else {
-//                strUpdate.append(column.name()).append("=").append("'").append(
-//                        value).append("',");
-//            }
-
-//        }
-//        if (method == METHOD_INSERT) {
-//            strField.deleteCharAt(strField.length() - 1).append(")");
-//            strValue.deleteCharAt(strValue.length() - 1).append(")");
-//            Log.e("SqlInsert", "setContentValues= "+(strField.toString() + strValue.toString()));
-//            return strField.toString() + strValue.toString();
-//        } else {
-//            Log.e("SqlInsert", "setContentValues= "+(strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString()));
-//            return strUpdate.deleteCharAt(strUpdate.length() - 1).append(" ").toString();
-//        }
         }
-        return "";
+        return fieldRelationDao;
     }
 
 }
