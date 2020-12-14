@@ -24,9 +24,14 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 DbModel<User> model = DbFactory.getInstance().openSession(User.class);
+
+
+                DbModel<Saff> modelSaff = DbFactory.getInstance().openSession(Saff.class);
+                modelSaff.deleteAll();
+
                 List<User> list = new ArrayList<>();
                 Log.e("MainActivity", "onCreate= " + list.toString());
-//                model.deleteAll();
+                model.deleteAll();
 //                for (int i = 0; i < 200; i++) {
 //                    User user = new User();
 //                    user.setUserid(i + "");
@@ -53,8 +58,12 @@ public class MainActivity extends Activity {
                 user.setUseridStaff(saff);
                 Log.i("MainActivity", "onCreate11= " + time);
                 model.updateByColumn("userid", user);
-//                model.insertList(list);
-                Log.e("MainActivity", "onCreate11= " + (System.currentTimeMillis() - time));
+                list.add(user);
+                model.insertList(list);
+
+                Log.d("MainActivity1", "user= " + model.queryList());
+                Log.d("MainActivity1", "modelSaff= " + modelSaff.queryList());
+                Log.e("MainActivity1", "onCreate11= " + (System.currentTimeMillis() - time));
             }
         }).start();
     }

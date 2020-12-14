@@ -196,35 +196,33 @@ public class SqlInsert<T> {
 //                LogUtil.d(TAG, "[insertList]: insert into " + this.mTableName + " " + sql);
                 rows += DbFactory.getInstance().getWriteDatabase().insert(this.mTableName, null, cv);
 
-                if (!hasRelationsDao) {
-
-                    //需要判断是否有关联表
-                    for (Field relationsDaoField : allFields) {
-                        if (!relationsDaoField.isAnnotationPresent(RelationDao.class)) {
-                            continue;
-                        }
-                        hasRelationsDao = true;
-                        RelationDao RelationsDao = relationsDaoField.getAnnotation(RelationDao.class);
-                        //获取外键列名
+                if (hasRelationsDao) {
+                    if (relationfield == null) {
+                        //需要判断是否有关联表
+                        for (Field relationsDaoField : allFields) {
+                            if (!relationsDaoField.isAnnotationPresent(RelationDao.class)) {
+                                continue;
+                            }
+                            hasRelationsDao = true;
+                            RelationDao RelationsDao = relationsDaoField.getAnnotation(RelationDao.class);
+                            //获取外键列名
 //                    foreignKey = RelationsDao.foreignKey();
-                        //关联类型
-                        relationtype = RelationsDao.type();
-                        //设置可访问
-                        relationsDaoField.setAccessible(true);
-                        relationfield = relationsDaoField;
+                            //关联类型
+                            relationtype = RelationsDao.type();
+                            //设置可访问
+                            relationsDaoField.setAccessible(true);
+                            relationfield = relationsDaoField;
+                        }
                     }
+                    if (relationfield == null) {
+                        hasRelationsDao = false;
+                        continue;
+                    }
+                } else {
                     continue;
                 }
                 //获取关联域的操作类型和关系类型
 //                String foreignKey = null;
-
-
-                if (relationfield == null) {
-                    hasRelationsDao = false;
-                    continue;
-                }
-
-
                 if (RelationsType.one2one.equals(relationtype)) {
                     //一对一关系
                     //获取关联表的对象

@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/XbbDb.iml" filepath="$PROJECT_DIR$/XbbDb.iml" />
-      <module fileurl="file://$PROJECT_DIR$/XbbDb/XbbDb-XbbDb.iml" filepath="$PROJECT_DIR$/XbbDb/XbbDb-XbbDb.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/XbbDb.iml" filepath="$PROJECT_DIR$/.idea/modules/XbbDb.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/XbbDb/XbbDb.XbbDb.iml" filepath="$PROJECT_DIR$/.idea/modules/XbbDb/XbbDb.XbbDb.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/XbbDb.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/XbbDb.app.iml" />
     </modules>
   </component>
 </project>
