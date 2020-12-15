@@ -74,6 +74,7 @@ public class TableHelper {
      */
     public static <T> void createTable(Class<T> clazz) {
         String tableName = "";
+        clazz = TableHelper.getTableClass(clazz);
         if (clazz.isAnnotationPresent(Table.class)) {
             Table table = clazz.getAnnotation(Table.class);
             tableName = table.name();
@@ -169,6 +170,7 @@ public class TableHelper {
      */
     public static <T> void dropTable(SQLiteDatabase db, Class<T> clazz) {
         String tableName = "";
+        clazz = TableHelper.getTableClass(clazz);
         if (clazz.isAnnotationPresent(Table.class)) {
             Table table = clazz.getAnnotation(Table.class);
             tableName = table.name();
@@ -182,6 +184,41 @@ public class TableHelper {
         }
     }
 
+    /**
+     * 返回表对应的类
+     *
+     * @param tempClass
+     * @return
+     */
+    public static Class getTableClass(Class<?> tempClass) {
+        while (tempClass != null) {//当父类为null的时候说明到达了最上层的父类(Object类).
+            if (tempClass.isAnnotationPresent(Table.class)) {
+                break;
+            }
+            tempClass = tempClass.getSuperclass(); //得到父类,然后赋给自己
+        }
+        return tempClass;
+    }
+
+    public static boolean isAnnotationTable(Class<?> tempClass) {
+        while (tempClass != null) {//当父类为null的时候说明到达了最上层的父类(Object类).
+            if (tempClass.isAnnotationPresent(Table.class)) {
+                return true;
+            }
+            tempClass = tempClass.getSuperclass(); //得到父类,然后赋给自己
+        }
+        return false;
+    }
+
+    public static Table getTable(Class<?> tempClass) {
+        while (tempClass != null) {//当父类为null的时候说明到达了最上层的父类(Object类).
+            if (tempClass.isAnnotationPresent(Table.class)) {
+                break;
+            }
+            tempClass = tempClass.getSuperclass(); //得到父类,然后赋给自己
+        }
+        return tempClass.getAnnotation(Table.class);
+    }
 
     /**
      * 合并Field数组并去重,并实现过滤掉非Column字段,和实现Id放在首字段位置功能.

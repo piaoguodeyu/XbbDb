@@ -89,6 +89,7 @@ public class DBImpl<T> {
 
     public DBImpl(Class<T> clazz) {
         this.mSQLiteOpenHelper = DbFactory.getInstance();
+
         if (clazz == null) {
 //            this.clazz = ((Class<T>) ((ParameterizedType) super
 //                    .getClass().getGenericSuperclass())
@@ -96,6 +97,7 @@ public class DBImpl<T> {
             return;
         } else {
             this.clazz = clazz;
+            this.clazz = TableHelper.getTableClass(clazz);
         }
 
         if (this.clazz.isAnnotationPresent(Table.class)) {
@@ -351,6 +353,7 @@ public class DBImpl<T> {
         XbbLogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
         return (List<T>) new SqlQuery<T>(this.clazz, this.allFields, this.mTableName, this.idColumn).queryListAbs(this.clazz, null, null, null, null, null, null, limit);
     }
+
     protected List<T> queryListAbs(String limit) {
         XbbLogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
         return (List<T>) new SqlQuery<T>(this.clazz, this.allFields, this.mTableName, this.idColumn).queryListAbs(this.clazz, null, null, null, null, null, null, limit);

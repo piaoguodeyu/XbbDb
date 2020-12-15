@@ -111,6 +111,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private String getTableNeame(Class<?> daoClasses) {
         String tablename = "";
+        daoClasses = TableHelper.getTableClass(daoClasses);
         if (daoClasses.isAnnotationPresent(Table.class)) {
             Table table = daoClasses.getAnnotation(Table.class);
             tablename = table.name();

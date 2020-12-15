@@ -446,6 +446,7 @@ public class SqlDelete<T> {
         String tablename = "";
         XbbLogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
                 + daoClasses);
+        daoClasses = TableHelper.getTableClass(daoClasses);
         if (daoClasses.isAnnotationPresent(Table.class)) {
             Table table = daoClasses.getAnnotation(Table.class);
             tablename = table.name();

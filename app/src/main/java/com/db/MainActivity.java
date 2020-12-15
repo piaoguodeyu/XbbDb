@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.db.table.Saff;
+import com.db.table.SaffInfo;
 import com.db.table.User;
+import com.db.table.UserInfo;
 import com.db.util.ThreadPoolManager;
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.helper.DbModel;
@@ -40,8 +42,8 @@ public class MainActivity extends Activity {
         List<User> list = new ArrayList<>();
         List<User> users = model.queryList();
         Log.e("MainActivity123", "onCreate= " + users);
-//        model.deleteAll();
-//        modelSaff.deleteAll();
+        model.deleteAll();
+        modelSaff.deleteAll();
 //                for (int i = 0; i < 200; i++) {
 //                    User user = new User();
 //                    user.setUserid(i + "");
@@ -53,14 +55,14 @@ public class MainActivity extends Activity {
 //                }
         for (int i = 1; i < 200; i++) {
             long time = System.currentTimeMillis();
-            User user = new User();
+            UserInfo user = new UserInfo();
             user.setUserid(i + "");
             user.setName("00700.hk");
             user.setAlipay2("00700.hk");
             user.setWx3("00700.hk");
             user.setMitake("00700.hk");
             user.setPhone("00700.hk");
-            Saff saff = new Saff();
+            SaffInfo saff = new SaffInfo();
             saff.setUserid(i+"");
             saff.setAlipay("00700.hk");
             saff.setMitake("00700.hk");

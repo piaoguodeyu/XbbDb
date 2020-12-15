@@ -64,6 +64,7 @@ public class SqlInsert<T> {
         String tablename = "";
         XbbLogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
                 + daoClasses);
+        daoClasses = TableHelper.getTableClass(daoClasses);
         if (daoClasses.isAnnotationPresent(Table.class)) {
             Table table = daoClasses.getAnnotation(Table.class);
             tablename = table.name();
@@ -145,7 +146,9 @@ public class SqlInsert<T> {
                     Object relationsDaoEntity = relationsDaoField.get(entity);
 
                     if (relationsDaoEntity != null) {
-                        if (relationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
+                        Class daoClasses = relationsDaoEntity.getClass();
+                        daoClasses = TableHelper.getTableClass(daoClasses);
+                        if (daoClasses.isAnnotationPresent(Table.class)) {
                             row = insertAbs(relationsDaoEntity, true);
                         }
                     }
@@ -155,7 +158,9 @@ public class SqlInsert<T> {
                     List<Object> list = (List<Object>) relationsDaoField.get(entity);
                     if (list != null && list.size() > 0) {
                         for (Object relationsDaoEntity : list) {
-                            if (relationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
+                            Class clazz = relationsDaoEntity.getClass();
+                            clazz = TableHelper.getTableClass(clazz);
+                            if (clazz.isAnnotationPresent(Table.class)) {
                                 row = insertAbs(relationsDaoEntity, true);
 
                             }
@@ -221,8 +226,10 @@ public class SqlInsert<T> {
                         }
                         setContentValues(relationsDaoEntity, relationsDaoCv, fieldList);
                         String relationsDaoTableName = "";
-                        if (relationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
-                            Table table = relationsDaoEntity.getClass().getAnnotation(Table.class);
+                        Class clazz = relationsDaoEntity.getClass();
+                        clazz = TableHelper.getTableClass(clazz);
+                        if (clazz.isAnnotationPresent(Table.class)) {
+                            Table table = TableHelper.getTable(clazz);
                             relationsDaoTableName = table.name();
                         }
 
@@ -243,8 +250,10 @@ public class SqlInsert<T> {
                             }
                             setContentValues(relationsDaoEntity, contentValues, fieldList);
                             String relationsDaoTableName = "";
-                            if (relationsDaoEntity.getClass().isAnnotationPresent(Table.class)) {
-                                Table table = relationsDaoEntity.getClass().getAnnotation(Table.class);
+                            Class daoClasses = relationsDaoEntity.getClass();
+                            daoClasses = TableHelper.getTableClass(daoClasses);
+                            if (daoClasses.isAnnotationPresent(Table.class)) {
+                                Table table = TableHelper.getTable(daoClasses);
                                 relationsDaoTableName = table.name();
                             }
 
