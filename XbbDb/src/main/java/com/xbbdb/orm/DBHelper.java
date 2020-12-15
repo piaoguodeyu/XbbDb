@@ -24,6 +24,7 @@ import android.util.Log;
 
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.annotation.Column;
+import com.xbbdb.orm.annotation.ColumnIndex;
 import com.xbbdb.orm.annotation.Id;
 import com.xbbdb.orm.annotation.Table;
 
@@ -33,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 /**
@@ -141,12 +143,15 @@ public class DBHelper extends SQLiteOpenHelper {
                     }
                 } else {
                     hashMap.remove(tablename);
-                    List<String> temp = getColumns(db, tablename);
-                    List<String> listColum = getColumns(db, tablename);
-                    List<String> listColumClazz = getColumns(claColum);
-                    temp.addAll(listColumClazz);
+                    //查找当前表的列
+                    CopyOnWriteArrayList<String> listColum = getColumns(db, tablename);
+                    //获取新版本该表对应的字段
+                    CopyOnWriteArrayList<String> listColumClazz = getColumns(claColum);
+                    //获取新版本该表对应的字段
+                    CopyOnWriteArrayList<String> newColumClazz = getColumns(claColum);
+                    //取出该表新增字段
                     listColumClazz.removeAll(listColum);
-                    if (!listColumClazz.isEmpty()) {
+                    if (!listColumClazz.isEmpty()) {//添加新字段
                         for (String colum : listColumClazz) {
                             StringBuilder builder = new StringBuilder("alter table ");
                             builder.append(tablename).append(" add column");
@@ -158,7 +163,8 @@ public class DBHelper extends SQLiteOpenHelper {
                             }
                         }
                     }
-                    listColum.removeAll(temp);
+                    //去重新表对应字段，移出不需要的表字段
+                    listColum.removeAll(newColumClazz);
                     if (!listColum.isEmpty()) {
                         for (String colum : listColum) {
                             StringBuilder builder = new StringBuilder("alter table ");
@@ -172,6 +178,16 @@ public class DBHelper extends SQLiteOpenHelper {
                         }
                     }
 
+
+                    List<Field> indexList = TableHelper.getIndexList(claColum, null);
+                    //增加索引
+                    if (!indexList.isEmpty()) {
+                        for (Field field : indexList) {
+                            ColumnIndex columnIndex = field.getAnnotation(ColumnIndex.class);
+                            String indexSql = "ALTER TABLE " + tablename + " ADD INDEX " + field.getName() + " (" + columnIndex.value() + ")";
+                            DbFactory.getInstance().getWriteDatabase().execSQL(indexSql);
+                        }
+                    }
                 }
 
             }
@@ -187,8 +203,8 @@ public class DBHelper extends SQLiteOpenHelper {
         return list;
     }
 
-    private List<String> getColumns(Class daoClasses) {
-        List<String> list = new ArrayList<>();
+    private CopyOnWriteArrayList<String> getColumns(Class daoClasses) {
+        CopyOnWriteArrayList<String> list = new CopyOnWriteArrayList<>();
         List<Field> allFields = TableHelper.joinFieldsOnlyColumn(daoClasses);
         if (allFields == null) {
             return list;
@@ -210,13 +226,13 @@ public class DBHelper extends SQLiteOpenHelper {
         return list;
     }
 
-    private List<String> getColumns(SQLiteDatabase db, String tableName) {
-        List<String> columns = new ArrayList<>();
+    private CopyOnWriteArrayList<String> getColumns(SQLiteDatabase db, String tableName) {
+        CopyOnWriteArrayList<String> columns = new CopyOnWriteArrayList<>();
         Cursor cursor = null;
         try {
             cursor = db.rawQuery("SELECT * FROM " + tableName + " limit 1", null);
             if (cursor != null) {
-                columns = new ArrayList<>(Arrays.asList(cursor.getColumnNames()));
+                columns = new CopyOnWriteArrayList<>(Arrays.asList(cursor.getColumnNames()));
             }
         } catch (Exception e) {
             Log.v(tableName, e.getMessage(), e);

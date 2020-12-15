@@ -1,6 +1,7 @@
 package com.db.table;
 
 import com.xbbdb.orm.annotation.Column;
+import com.xbbdb.orm.annotation.ColumnIndex;
 import com.xbbdb.orm.annotation.Id;
 import com.xbbdb.orm.annotation.RelationDao;
 import com.xbbdb.orm.annotation.RelationsType;
@@ -11,7 +12,11 @@ import com.xbbdb.orm.annotation.Table;
  */
 @Table(name = "User")
 public class User {
-    @Id(name = "userid")
+    @Id(name = "mainID")
+    @Column(name = "mainID")
+    Integer mainID;
+
+    @ColumnIndex(value = "userid")
     @Column(name = "userid")
     String userid;
     @Column(name = "name")
@@ -29,7 +34,7 @@ public class User {
     @Column(name = "type")
     String type = "type";
     @Column(name = "useridStaff")
-    @RelationDao(name = "userid",foreignKey = "useridStaff",type = RelationsType.one2one)
+    @RelationDao(name = "userid", foreignKey = "useridStaff", type = RelationsType.one2one)
     Saff useridStaff;
 
     public String getCode() {

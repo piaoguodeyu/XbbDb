@@ -21,6 +21,7 @@ import android.util.Log;
 
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.annotation.Column;
+import com.xbbdb.orm.annotation.ColumnIndex;
 import com.xbbdb.orm.annotation.Id;
 import com.xbbdb.orm.annotation.Table;
 
@@ -85,6 +86,7 @@ public class TableHelper {
         sb.append("CREATE TABLE ").append(tableName).append(" (");
 
         List<Field> allFields = TableHelper.joinFieldsOnlyColumn(clazz);
+        List<Field> indexList = new ArrayList<>();
         for (Field field : allFields) {
             field.setAccessible(true);
             if (field.isAnnotationPresent(Id.class)) {
@@ -104,14 +106,10 @@ public class TableHelper {
             if (column.length() != 0) {
                 sb.append("(" + column.length() + ")");
             }
-            //实体类定义为Integer类型后不能生成Id异常
-//			if ((field.isAnnotationPresent(Id.class))
-//					&& ((field.getType() == Integer.TYPE) || (field.getType() == Integer.class)))
-//				sb.append(" primary key autoincrement");
-//			else if (field.isAnnotationPresent(Id.class)) {
-//				sb.append(" primary key");
-//			}
-
+            ColumnIndex columnIndex = field.getAnnotation(ColumnIndex.class);
+            if (columnIndex != null) {
+                indexList.add(field);
+            }
             sb.append(", ");
         }
 
@@ -120,6 +118,46 @@ public class TableHelper {
         String sql = sb.toString();
         Log.d(TAG, "crate table [" + tableName + "]: " + sql);
         DbFactory.getInstance().getWriteDatabase().execSQL(sql);
+        if (!indexList.isEmpty()) {
+            for (Field field : indexList) {
+                ColumnIndex columnIndex = field.getAnnotation(ColumnIndex.class);
+                String indexSql = "CREATE INDEX " + field.getName() + " ON " + tableName + " (" + columnIndex.value() + ")";
+                DbFactory.getInstance().getWriteDatabase().execSQL(indexSql);
+            }
+        }
+    }
+
+    public static List<Field> getIndexList(Class calazz, StringBuilder stringBuilder) {
+        List<Field> allFields = TableHelper.joinFieldsOnlyColumn(calazz);
+        List<Field> indexList = new ArrayList<>();
+        for (Field field : allFields) {
+            field.setAccessible(true);
+            if (stringBuilder != null) {
+                if (field.isAnnotationPresent(Id.class)) {
+                    Id column = field.getAnnotation(Id.class);
+                    stringBuilder.append(column.name() + " INTEGER PRIMARY KEY AUTOINCREMENT, ");
+                    continue;
+                }
+                if (!field.isAnnotationPresent(Column.class)) {
+                    continue;
+                }
+                Column column = field.getAnnotation(Column.class);
+                String columnType = "";
+                columnType = column.type();
+                stringBuilder.append(column.name() + " " + columnType);
+
+                if (column.length() != 0) {
+                    stringBuilder.append("(" + column.length() + ")");
+                }
+                stringBuilder.append(", ");
+
+            }
+            ColumnIndex columnIndex = field.getAnnotation(ColumnIndex.class);
+            if (columnIndex != null) {
+                indexList.add(field);
+            }
+        }
+        return indexList;
     }
 
     /**
