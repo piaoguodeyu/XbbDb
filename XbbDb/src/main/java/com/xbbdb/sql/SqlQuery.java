@@ -3,7 +3,6 @@ package com.xbbdb.sql;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteStatement;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.TableHelper;
@@ -11,7 +10,7 @@ import com.xbbdb.orm.annotation.Column;
 import com.xbbdb.orm.annotation.RelationDao;
 import com.xbbdb.orm.annotation.RelationsType;
 import com.xbbdb.orm.annotation.Table;
-import com.xbbdb.utils.LogUtil;
+import com.xbbdb.utils.XbbLogUtil;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -69,7 +68,7 @@ public class SqlQuery<T> {
             SQLiteStatement statement = DbFactory.getInstance().getReadDatabase().compileStatement(sql);
             count = (int) statement.simpleQueryForLong();
         } catch (Exception e) {
-            LogUtil.e(TAG, "[queryCount] from DB exception");
+            XbbLogUtil.e(TAG, "[queryCount] from DB exception");
             e.printStackTrace();
         } finally {
             closeCursor(cursor);
@@ -88,13 +87,13 @@ public class SqlQuery<T> {
         Cursor cursor = null;
         int count = 0;
         try {
-            LogUtil.d(TAG, "[queryCount]: " + getLogSql(sql, selectionArgs));
+            XbbLogUtil.d(TAG, "[queryCount]: " + getLogSql(sql, selectionArgs));
             cursor = DbFactory.getInstance().getReadDatabase().query(this.mTableName, null, sql, selectionArgs, null, null, null);
             if (cursor != null) {
                 count = cursor.getCount();
             }
         } catch (Exception e) {
-            LogUtil.e(TAG, "[queryCount] from DB exception");
+            XbbLogUtil.e(TAG, "[queryCount] from DB exception");
             e.printStackTrace();
         } finally {
             closeCursor(cursor);
@@ -140,7 +139,7 @@ public class SqlQuery<T> {
         }
         for (Object entity : list) {
 
-            LogUtil.i(TAG, "DBImpl: queryListAbs: [llllllll]="
+            XbbLogUtil.i(TAG, "DBImpl: queryListAbs: [llllllll]="
                     + entity);
             if (RelationsType.one2one.equals(type)) {
                 Field fieldParent = hashMap.get(name);
@@ -168,7 +167,7 @@ public class SqlQuery<T> {
                     }
                 }
                 if (listEntityClazz == null) {
-                    LogUtil.e(TAG, "对象模型需要设置List的泛型");
+                    XbbLogUtil.e(TAG, "对象模型需要设置List的泛型");
                     return true;
                 }
                 List<Object> relationsDaoList = new ArrayList<Object>();
@@ -192,7 +191,7 @@ public class SqlQuery<T> {
                                 //设置可访问
                                 pFiled.setAccessible(true);
                                 value = String.valueOf(pFiled.get(entity));
-                                LogUtil.i(TAG, "DBImpl: queryListAbs: [vvvvvvvvv]="
+                                XbbLogUtil.i(TAG, "DBImpl: queryListAbs: [vvvvvvvvv]="
                                         + value);
                                 relationsDaoList = queryRelation(listEntityClazz, foreignKey, value);
                                 //查询数据设置给这个域
@@ -315,7 +314,7 @@ public class SqlQuery<T> {
 
     public List<T> queryListAbs(int page, int pageSize) {
         String limit = (page - 1) * pageSize + "," + pageSize;
-        LogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
+        XbbLogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
         return (List<T>) queryListAbs(this.clazz, null, null, null, null, null, null, limit);
     }
 
@@ -339,7 +338,7 @@ public class SqlQuery<T> {
         Cursor cursor = null;
         try {
             String tableName1 = getTableNeame(daoClasses);
-            LogUtil.d(TAG, "[666666666] from " + tableName1 + " where " + where
+            XbbLogUtil.d(TAG, "[666666666] from " + tableName1 + " where " + where
                     + "(" + selectionArgs + ")" + " group by " + groupBy + " having " + having + " order by " + orderBy + " limit " + limit);
             cursor = DbFactory.getInstance().getReadDatabase().query(tableName1, columns, where,
                     selectionArgs, groupBy, having, orderBy, limit);
@@ -347,7 +346,7 @@ public class SqlQuery<T> {
             //获取关联域的操作类型和关系类型
             queryList(daoClasses, list);
         } catch (Exception e) {
-            LogUtil.e(this.TAG, "[queryList] from DB Exception" + e);
+            XbbLogUtil.e(this.TAG, "[queryList] from DB Exception" + e);
             e.printStackTrace();
         } finally {
             closeCursor(cursor);
@@ -367,7 +366,7 @@ public class SqlQuery<T> {
         Cursor cursor = null;
         List<Map<String, String>> retList = new ArrayList<Map<String, String>>();
         try {
-            LogUtil.d(TAG, "[queryMapList]: " + getLogSql(sql, selectionArgs));
+            XbbLogUtil.d(TAG, "[queryMapList]: " + getLogSql(sql, selectionArgs));
             cursor = DbFactory.getInstance().getReadDatabase().rawQuery(sql, selectionArgs);
             while (cursor.moveToNext()) {
                 Map<String, String> map = new HashMap<String, String>();
@@ -383,7 +382,7 @@ public class SqlQuery<T> {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.e(TAG, "[queryMapList] from DB exception");
+            XbbLogUtil.e(TAG, "[queryMapList] from DB exception");
         } finally {
             closeCursor(cursor);
         }
@@ -399,7 +398,7 @@ public class SqlQuery<T> {
     public T queryOneAbs(int id) {
         String selection = this.idColumn + " = ?";
         String[] selectionArgs = {Integer.toString(id)};
-        LogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
+        XbbLogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
                 + this.idColumn + " = '" + id + "'");
         List<Object> list = queryListAbs(this.clazz, null, selection, selectionArgs, null, null, null,
                 null);
@@ -422,7 +421,7 @@ public class SqlQuery<T> {
         String table = getTableNeame(daoClasses);
         String selection = colum + " = ?";
         String[] selectionArgs = {columValues};
-        LogUtil.d(TAG, "[queryOneAbs]: selectAll * from " + table + " where "
+        XbbLogUtil.d(TAG, "[queryOneAbs]: selectAll * from " + table + " where "
                 + colum + " = '" + columValues + "'");
         List<Object> list = queryListAbs(daoClasses, null, selection, selectionArgs, null, null, null,
                 null);
@@ -439,7 +438,7 @@ public class SqlQuery<T> {
     public T queryOneAbs(String id) {
         String selection = this.idColumn + " = ?";
         String[] selectionArgs = {id};
-        LogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
+        XbbLogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
                 + this.idColumn + " = '" + id + "'");
         List<T> list = (List<T>) queryListAbs(this.clazz, null, selection, selectionArgs, null, null, null,
                 null);
@@ -457,7 +456,7 @@ public class SqlQuery<T> {
     public T queryOneAbs(String column, String data) {
         String selection = column + " = ?";
         String[] selectionArgs = {data};
-        LogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
+        XbbLogUtil.d(TAG, "[queryOne]: selectAll * from " + this.mTableName + " where "
                 + this.idColumn + " = '" + column + "'");
         List<T> list = (List<T>) queryListAbs(this.clazz, null, selection, selectionArgs, null, null, null,
                 null);
@@ -480,13 +479,13 @@ public class SqlQuery<T> {
         List<Object> list = new ArrayList<Object>();
         Cursor cursor = null;
         try {
-            LogUtil.d(TAG, "[queryRaw]: " + getLogSql(sql, selectionArgs));
+            XbbLogUtil.d(TAG, "[queryRaw]: " + getLogSql(sql, selectionArgs));
             cursor = DbFactory.getInstance().getReadDatabase().rawQuery(sql, selectionArgs);
             getListFromCursor(clazz, list, cursor);
             //获取关联域的操作类型和关系类型
             queryList(this.clazz, list);
         } catch (Exception e) {
-            LogUtil.e(this.TAG, "[queryRaw] from DB Exception." + e);
+            XbbLogUtil.e(this.TAG, "[queryRaw] from DB Exception." + e);
             e.printStackTrace();
         } finally {
             closeCursor(cursor);
@@ -514,14 +513,14 @@ public class SqlQuery<T> {
      */
     private String getTableNeame(Class<?> daoClasses) {
         String tablename = "";
-        LogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
+        XbbLogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
                 + daoClasses);
         if (daoClasses.isAnnotationPresent(Table.class)) {
             Table table = daoClasses.getAnnotation(Table.class);
             tablename = table.name();
         }
         if (TextUtils.isEmpty(tablename)) {
-            LogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
+            XbbLogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
                     + "想要映射的实体[" + daoClasses.getName() + "],未注解@Table(name=\"?\"),被跳过");
 
         }

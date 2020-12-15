@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import com.xbbdb.global.DbConfig;
 import com.xbbdb.orm.DBHelper;
 import com.xbbdb.orm.helper.DbModel;
-import com.xbbdb.utils.LogUtil;
+import com.xbbdb.utils.XbbLogUtil;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -107,7 +107,7 @@ public class DbFactory extends DBHelper {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(TAG, "DbFactory: openWriteDatabase: []="
+            XbbLogUtil.i(TAG, "DbFactory: openWriteDatabase: []="
                     + e);
         }
         return mWriteDatabase;
@@ -120,7 +120,7 @@ public class DbFactory extends DBHelper {
         try {
             if (canCloseWriteDb()) {
                 if (mWriteDatabase != null) {
-                    LogUtil.i(TAG, "DBImpl: closeWriteDatabase: [ddddddd]="
+                    XbbLogUtil.i(TAG, "DBImpl: closeWriteDatabase: [ddddddd]="
                             + mWriteDatabase.isOpen() + "   " + writeDbIsOpen());
                     if (mWriteDatabase.isOpen()) {
                         mWriteDatabase.close();
@@ -130,7 +130,7 @@ public class DbFactory extends DBHelper {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(TAG, "DBImpl: closeWriteDatabase: [transaction]="
+            XbbLogUtil.i(TAG, "DBImpl: closeWriteDatabase: [transaction]="
                     + e);
         }
     }

@@ -26,10 +26,9 @@ import com.xbbdb.sql.SqlDelete;
 import com.xbbdb.sql.SqlInsert;
 import com.xbbdb.sql.SqlQuery;
 import com.xbbdb.sql.SqlUpdate;
-import com.xbbdb.utils.LogUtil;
+import com.xbbdb.utils.XbbLogUtil;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
 
@@ -273,9 +272,9 @@ public class DBImpl<T> {
             } else {
                 mSQLiteOpenHelper.getWriteDatabase().execSQL(sql, selectionArgs);
             }
-            LogUtil.d(TAG, "[execSql]: success" + getLogSql(sql, selectionArgs));
+            XbbLogUtil.d(TAG, "[execSql]: success" + getLogSql(sql, selectionArgs));
         } catch (Exception e) {
-            LogUtil.e(TAG, "[execSql] DB exception.");
+            XbbLogUtil.e(TAG, "[execSql] DB exception.");
             e.printStackTrace();
         } finally {
         }
@@ -349,11 +348,11 @@ public class DBImpl<T> {
 
     protected List<T> queryListAbs(int page, int pageSize) {
         String limit = (page - 1) * pageSize + "," + pageSize;
-        LogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
+        XbbLogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
         return (List<T>) new SqlQuery<T>(this.clazz, this.allFields, this.mTableName, this.idColumn).queryListAbs(this.clazz, null, null, null, null, null, null, limit);
     }
     protected List<T> queryListAbs(String limit) {
-        LogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
+        XbbLogUtil.i(TAG, "DBImpl: queryList: [dddddddddddd]=" + limit);
         return (List<T>) new SqlQuery<T>(this.clazz, this.allFields, this.mTableName, this.idColumn).queryListAbs(this.clazz, null, null, null, null, null, null, limit);
     }
 
@@ -455,7 +454,7 @@ public class DBImpl<T> {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(TAG, "DBImpl: setWriteTransactionSuccessful: []="
+            XbbLogUtil.i(TAG, "DBImpl: setWriteTransactionSuccessful: []="
                     + e);
         }
     }
@@ -471,7 +470,7 @@ public class DBImpl<T> {
             mSQLiteOpenHelper.openWriteDatabase();
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(TAG, "DBImpl: startWritableDatabase: [transaction]="
+            XbbLogUtil.i(TAG, "DBImpl: startWritableDatabase: [transaction]="
                     + e);
         } finally {
         }
@@ -488,7 +487,7 @@ public class DBImpl<T> {
             mSQLiteOpenHelper.openReadDatabase();
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(TAG, "DBImpl: startReadableDatabase: [transaction]="
+            XbbLogUtil.i(TAG, "DBImpl: startReadableDatabase: [transaction]="
                     + e);
         }
 
@@ -508,7 +507,7 @@ public class DBImpl<T> {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(TAG, "DBImpl: setWriteTransactionSuccessful: []="
+            XbbLogUtil.i(TAG, "DBImpl: setWriteTransactionSuccessful: []="
                     + e);
         } finally {
             if (database != null) {

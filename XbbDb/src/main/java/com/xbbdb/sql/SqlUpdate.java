@@ -9,7 +9,7 @@ import com.xbbdb.orm.annotation.Column;
 import com.xbbdb.orm.annotation.RelationDao;
 import com.xbbdb.orm.annotation.RelationsType;
 import com.xbbdb.orm.annotation.Table;
-import com.xbbdb.utils.LogUtil;
+import com.xbbdb.utils.XbbLogUtil;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -57,14 +57,14 @@ public class SqlUpdate<T> {
      */
     private String getTableNeame(Class<?> daoClasses) {
         String tablename = "";
-        LogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
+        XbbLogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
                 + daoClasses);
         if (daoClasses.isAnnotationPresent(Table.class)) {
             Table table = daoClasses.getAnnotation(Table.class);
             tablename = table.name();
         }
         if (TextUtils.isEmpty(tablename)) {
-            LogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
+            XbbLogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
                     + "想要映射的实体[" + daoClasses.getName() + "],未注解@Table(name=\"?\"),被跳过");
 
         }
@@ -98,7 +98,7 @@ public class SqlUpdate<T> {
             String sql = setContentValues(entity, cv, list);
             String where = column + " = ?";
             String idValues = (String) cv.get(column);
-            LogUtil.i(TAG, "DBImpl: execSql: [8888888899999]=" + idValues + "  sql= " + sql);
+            XbbLogUtil.i(TAG, "DBImpl: execSql: [8888888899999]=" + idValues + "  sql= " + sql);
 
             String[] whereValue = {idValues};
 
@@ -154,7 +154,7 @@ public class SqlUpdate<T> {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            LogUtil.i(TAG, "DBImpl: update: [column, entity]="
+            XbbLogUtil.i(TAG, "DBImpl: update: [column, entity]="
                     + e);
         } finally {
         }
@@ -174,7 +174,7 @@ public class SqlUpdate<T> {
                 }
             }
         } catch (Exception e) {
-            LogUtil.d(this.TAG, "[execSql] DB Exception.");
+            XbbLogUtil.d(this.TAG, "[execSql] DB Exception.");
             e.printStackTrace();
         }
 

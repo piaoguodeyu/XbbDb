@@ -2,7 +2,6 @@ package com.xbbdb.sql;
 
 import android.content.ContentValues;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.TableHelper;
@@ -10,7 +9,7 @@ import com.xbbdb.orm.annotation.Column;
 import com.xbbdb.orm.annotation.RelationDao;
 import com.xbbdb.orm.annotation.RelationsType;
 import com.xbbdb.orm.annotation.Table;
-import com.xbbdb.utils.LogUtil;
+import com.xbbdb.utils.XbbLogUtil;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -63,14 +62,14 @@ public class SqlInsert<T> {
      */
     private String getTableNeame(Class<?> daoClasses) {
         String tablename = "";
-        LogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
+        XbbLogUtil.i(TAG, "DBImpl: getTableNeame: [ccccccc]="
                 + daoClasses);
         if (daoClasses.isAnnotationPresent(Table.class)) {
             Table table = daoClasses.getAnnotation(Table.class);
             tablename = table.name();
         }
         if (TextUtils.isEmpty(tablename)) {
-            LogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
+            XbbLogUtil.i(TAG, "DaoConfig: DaoConfig: [daoClasses]="
                     + "想要映射的实体[" + daoClasses.getName() + "],未注解@Table(name=\"?\"),被跳过");
 
         }
@@ -125,7 +124,7 @@ public class SqlInsert<T> {
             for (Field relationsDaoField : filed) {
                 RelationDao re = relationsDaoField.getAnnotation(RelationDao.class);
                 if (re != null) {
-                    LogUtil.i(TAG, "DBImpl: insertAbs: [entity, flag]="
+                    XbbLogUtil.i(TAG, "DBImpl: insertAbs: [entity, flag]="
                             + re.foreignKey());
                 }
 
@@ -167,7 +166,7 @@ public class SqlInsert<T> {
             }
 
         } catch (Exception e) {
-            LogUtil.d(this.TAG, "[insert] into DB Exception." + e);
+            XbbLogUtil.d(this.TAG, "[insert] into DB Exception." + e);
             e.printStackTrace();
             row = -1;
         } finally {
@@ -257,7 +256,7 @@ public class SqlInsert<T> {
                 }
             }
         } catch (Exception e) {
-            LogUtil.d(this.TAG, "[insertList] into DB Exception." + e);
+            XbbLogUtil.d(this.TAG, "[insertList] into DB Exception." + e);
             e.printStackTrace();
         } finally {
         }
