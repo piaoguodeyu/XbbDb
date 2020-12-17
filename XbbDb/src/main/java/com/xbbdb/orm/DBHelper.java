@@ -27,6 +27,7 @@ import com.xbbdb.orm.annotation.Column;
 import com.xbbdb.orm.annotation.ColumnIndex;
 import com.xbbdb.orm.annotation.Id;
 import com.xbbdb.orm.annotation.Table;
+import com.xbbdb.utils.XbbLogUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -125,11 +126,30 @@ public class DBHelper extends SQLiteOpenHelper {
             if (daoClasses == null || daoClasses.length == 0) {
                 return list;
             }
+
+
+            Cursor cursorsqlite_master = db.rawQuery("select * from sqlite_master", null);
+            while (cursorsqlite_master.moveToNext()) {
+                String[] col = cursorsqlite_master.getColumnNames();
+
+                try {
+                    for (int i = 0; i < col.length; i++) {
+                        String data = col[i];
+                        XbbLogUtil.i("saveOldTables", "data= " + data + " name= " +
+                                cursorsqlite_master.getColumnIndex(data)
+                                + " value= " + cursorsqlite_master.getString(i));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
             Cursor cursor = db.rawQuery("select name from sqlite_master where type='table' order by name", null);
             while (cursor.moveToNext()) {
                 //遍历出表名
                 String tablename = cursor.getString(0);
                 Class claColum = hashMap.get(tablename);
+                XbbLogUtil.e("saveOldTables", "tablename= " + tablename + " claColum= " + claColum);
                 if (claColum == null) {
                     if ("android_metadata".equals(tablename) || "sqlite_sequence".equals(tablename)) {
                         continue;
@@ -184,9 +204,15 @@ public class DBHelper extends SQLiteOpenHelper {
                     //增加索引
                     if (!indexList.isEmpty()) {
                         for (Field field : indexList) {
-                            ColumnIndex columnIndex = field.getAnnotation(ColumnIndex.class);
-                            String indexSql = "ALTER TABLE " + tablename + " ADD INDEX " + field.getName() + " (" + columnIndex.value() + ")";
-                            DbFactory.getInstance().getWriteDatabase().execSQL(indexSql);
+                            try {
+                                //先删除索引  再建索引
+                                DbFactory.getInstance().getWriteDatabase().execSQL("DROP INDEX " + field.getName() + "_index");
+                                ColumnIndex columnIndex = field.getAnnotation(ColumnIndex.class);
+                                String indexSql = "CREATE INDEX " + field.getName() + "_index" + " ON " + tablename + " (" + columnIndex.value() + ")";
+                                DbFactory.getInstance().getWriteDatabase().execSQL(indexSql);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }

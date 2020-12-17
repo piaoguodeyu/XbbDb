@@ -7,6 +7,7 @@ import com.db.table.User;
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.global.DbConfig;
 import com.xbbdb.orm.helper.DbModel;
+import com.xbbdb.utils.XbbLogUtil;
 
 
 /**
@@ -20,9 +21,10 @@ public class MyApp extends Application {
         super.onCreate();
         DbConfig config = new DbConfig();
         config.setContext(getApplicationContext())
-                .setDBNAME("test.db").setDBVERSION(18)
+                .setDBNAME("test.db").setDBVERSION(2)
                 .setClazz(clazz);
         DbFactory.init(config);
+        XbbLogUtil.setDebug(true);
 //        DbModel<User> dbModel=DbFactory.getInstance().openSession(User.class);
 //        dbModel.queryList();
 //        dbModel.deleteOne(new User());

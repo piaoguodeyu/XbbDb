@@ -111,7 +111,7 @@ public class DBImpl<T> {
         // 找到主键
         for (Field field : this.allFields) {
             if (field.isAnnotationPresent(Id.class)) {
-                Column column = field.getAnnotation(Column.class);
+                Id column = field.getAnnotation(Id.class);
                 this.idColumn = column.name();
                 break;
             }

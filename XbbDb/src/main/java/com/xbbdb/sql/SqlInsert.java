@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import com.xbbdb.factory.DbFactory;
 import com.xbbdb.orm.TableHelper;
 import com.xbbdb.orm.annotation.Column;
+import com.xbbdb.orm.annotation.Id;
 import com.xbbdb.orm.annotation.RelationDao;
 import com.xbbdb.orm.annotation.RelationsType;
 import com.xbbdb.orm.annotation.Table;
@@ -114,61 +115,51 @@ public class SqlInsert<T> {
             ContentValues cv = new ContentValues();
             // 加载所有字段
             List<Field> allFields = TableHelper.joinFieldsOnlyColumn(entity.getClass());
-            setContentValues(entity, cv, allFields);
+            Field relationsDaoField = setContentValues(entity, cv, allFields);
             String tablename = getTableNeame(entity.getClass());
             row = DbFactory.getInstance().getWriteDatabase().insert(tablename, null, cv);
 
             //获取关联域的操作类型和关系类型
             String type = null;
-            List<Field> filed = getFiled(entity.getClass());
             //需要判断是否有关联表
-            for (Field relationsDaoField : filed) {
-                RelationDao re = relationsDaoField.getAnnotation(RelationDao.class);
-                if (re != null) {
-                    XbbLogUtil.i(TAG, "DBImpl: insertAbs: [entity, flag]="
-                            + re.foreignKey());
-                }
-
-                if (!relationsDaoField.isAnnotationPresent(RelationDao.class)) {
-                    continue;
-                }
-                RelationDao relationDao = relationsDaoField.getAnnotation(RelationDao.class);
-                //获取外键列名
-//                foreignKey = relationDao.foreignKey();
-                //关联类型
-                type = relationDao.type();
-                //操作类型
-                //设置可访问
-                relationsDaoField.setAccessible(true);
-                if (RelationsType.one2one.equals(type)) {
-                    //一对一关系
-                    //获取关联表的对象
-                    Object relationsDaoEntity = relationsDaoField.get(entity);
-
-                    if (relationsDaoEntity != null) {
-                        Class daoClasses = relationsDaoEntity.getClass();
-                        daoClasses = TableHelper.getTableClass(daoClasses);
-                        if (daoClasses.isAnnotationPresent(Table.class)) {
-                            row = insertAbs(relationsDaoEntity, true);
-                        }
-                    }
-                } else if (RelationsType.one2many.equals(type) || RelationsType.many2many.equals(type)) {
-                    //一对多关系
-                    //获取关联表的对象
-                    List<Object> list = (List<Object>) relationsDaoField.get(entity);
-                    if (list != null && list.size() > 0) {
-                        for (Object relationsDaoEntity : list) {
-                            Class clazz = relationsDaoEntity.getClass();
-                            clazz = TableHelper.getTableClass(clazz);
-                            if (clazz.isAnnotationPresent(Table.class)) {
-                                row = insertAbs(relationsDaoEntity, true);
-
-                            }
-                        }
-                    }
-
-                }
+            if (relationsDaoField == null) {
+                return row;
             }
+            RelationDao relationDao = relationsDaoField.getAnnotation(RelationDao.class);
+            //获取外键列名
+            type = relationDao.type();
+            //操作类型
+            //设置可访问
+            relationsDaoField.setAccessible(true);
+            if (RelationsType.one2one.equals(type)) {
+                //一对一关系
+                //获取关联表的对象
+                Object relationsDaoEntity = relationsDaoField.get(entity);
+
+                if (relationsDaoEntity != null) {
+                    Class daoClasses = relationsDaoEntity.getClass();
+                    daoClasses = TableHelper.getTableClass(daoClasses);
+                    if (daoClasses.isAnnotationPresent(Table.class)) {
+                        row = insertAbs(relationsDaoEntity, true);
+                    }
+                }
+            } else if (RelationsType.one2many.equals(type) || RelationsType.many2many.equals(type)) {
+                //一对多关系
+                //获取关联表的对象
+                List<Object> list = (List<Object>) relationsDaoField.get(entity);
+                if (list != null && list.size() > 0) {
+                    for (Object relationsDaoEntity : list) {
+                        Class clazz = relationsDaoEntity.getClass();
+                        clazz = TableHelper.getTableClass(clazz);
+                        if (clazz.isAnnotationPresent(Table.class)) {
+                            row = insertAbs(relationsDaoEntity, true);
+
+                        }
+                    }
+                }
+
+            }
+//            }
 
         } catch (Exception e) {
             XbbLogUtil.d(this.TAG, "[insert] into DB Exception." + e);
@@ -285,6 +276,9 @@ public class SqlInsert<T> {
     ) throws IllegalAccessException {
         Field fieldRelationDao = null;
         for (Field field : allFields) {
+            if (field.isAnnotationPresent(Id.class)) {
+                continue;
+            }
             if (!field.isAnnotationPresent(Column.class)) {
                 continue;
             }

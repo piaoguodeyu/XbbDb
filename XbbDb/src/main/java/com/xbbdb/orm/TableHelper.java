@@ -121,9 +121,14 @@ public class TableHelper {
         DbFactory.getInstance().getWriteDatabase().execSQL(sql);
         if (!indexList.isEmpty()) {
             for (Field field : indexList) {
-                ColumnIndex columnIndex = field.getAnnotation(ColumnIndex.class);
-                String indexSql = "CREATE INDEX " + field.getName() + " ON " + tableName + " (" + columnIndex.value() + ")";
-                DbFactory.getInstance().getWriteDatabase().execSQL(indexSql);
+                try {
+                    ColumnIndex columnIndex = field.getAnnotation(ColumnIndex.class);
+                    String indexSql = "CREATE INDEX " + field.getName()+"_index" + " ON " + tableName + " (" + columnIndex.value() + ")";
+                    Log.d(TAG, "indexSql= " + indexSql);
+                    DbFactory.getInstance().getWriteDatabase().execSQL(indexSql);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
