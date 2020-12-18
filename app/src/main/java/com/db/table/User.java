@@ -29,7 +29,9 @@ public class User {
     String wx3 = "66666*****";
     @Column(name = "mitake")
     String mitake = "mitake";
+
     @Column(name = "code")
+    @ColumnIndex(value = "code")
     String code = "00700.hk";
     @Column(name = "type")
     String type = "type";

@@ -123,7 +123,12 @@ public class TableHelper {
             for (Field field : indexList) {
                 try {
                     ColumnIndex columnIndex = field.getAnnotation(ColumnIndex.class);
-                    String indexSql = "CREATE INDEX " + field.getName()+"_index" + " ON " + tableName + " (" + columnIndex.value() + ")";
+                    String indexSql;
+                    if (columnIndex.unique()) {
+                        indexSql = "CREATE UNIQUE INDEX " + field.getName() + "_index" + " ON " + tableName + " (" + columnIndex.value() + ")";
+                    } else {
+                        indexSql = "CREATE INDEX " + field.getName() + "_index" + " ON " + tableName + " (" + columnIndex.value() + ")";
+                    }
                     Log.d(TAG, "indexSql= " + indexSql);
                     DbFactory.getInstance().getWriteDatabase().execSQL(indexSql);
                 } catch (Exception e) {

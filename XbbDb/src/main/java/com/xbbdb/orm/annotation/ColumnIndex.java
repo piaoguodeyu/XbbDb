@@ -26,5 +26,5 @@ import java.lang.annotation.Target;
 @Target({java.lang.annotation.ElementType.FIELD})
 public @interface ColumnIndex {
     String value() default "";
-//    boolean unique() default false;
+    boolean unique() default false;
 }

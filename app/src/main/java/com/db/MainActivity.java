@@ -56,7 +56,7 @@ public class MainActivity extends Activity {
         for (int i = 1; i < 200; i++) {
             long time = System.currentTimeMillis();
             UserInfo user = new UserInfo();
-            user.setUserid(i + "");
+            user.setUserid( "100");
             user.setName("00700.hk");
             user.setAlipay2("00700.hk");
             user.setWx3("00700.hk");

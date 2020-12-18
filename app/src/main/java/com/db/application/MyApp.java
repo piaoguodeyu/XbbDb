@@ -21,7 +21,7 @@ public class MyApp extends Application {
         super.onCreate();
         DbConfig config = new DbConfig();
         config.setContext(getApplicationContext())
-                .setDBNAME("test.db").setDBVERSION(2)
+                .setDBNAME("test.db").setDBVERSION(9)
                 .setClazz(clazz);
         DbFactory.init(config);
         XbbLogUtil.setDebug(true);

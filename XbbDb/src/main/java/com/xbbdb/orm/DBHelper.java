@@ -199,24 +199,25 @@ public class DBHelper extends SQLiteOpenHelper {
                         }
                     }
 
-
                     List<Field> indexList = TableHelper.getIndexList(claColum, null);
                     //增加索引
                     if (!indexList.isEmpty()) {
                         for (Field field : indexList) {
                             try {
-                                //先删除索引  再建索引
-                                DbFactory.getInstance().getWriteDatabase().execSQL("DROP INDEX " + field.getName() + "_index");
                                 ColumnIndex columnIndex = field.getAnnotation(ColumnIndex.class);
-                                String indexSql = "CREATE INDEX " + field.getName() + "_index" + " ON " + tablename + " (" + columnIndex.value() + ")";
+                                String indexSql;
+                                if (columnIndex.unique()) {
+                                    indexSql = "CREATE UNIQUE INDEX " + field.getName() + "_index" + " ON " + tablename + " (" + columnIndex.value() + ")";
+                                } else {
+                                    indexSql = "CREATE INDEX " + field.getName() + "_index" + " ON " + tablename + " (" + columnIndex.value() + ")";
+                                }
                                 DbFactory.getInstance().getWriteDatabase().execSQL(indexSql);
-                            } catch (Exception e) {
+                            } catch (Exception e) {//创建失败则表示已经创建
                                 e.printStackTrace();
                             }
                         }
                     }
                 }
-
             }
             List<Class> listtable = new ArrayList();
             for (Map.Entry<String, Class<?>> enty : hashMap.entrySet()) {
