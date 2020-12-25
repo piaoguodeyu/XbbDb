@@ -243,12 +243,15 @@ public class DBImpl<T> {
      * @return the long
      */
     protected long updateAbs(T entity) {
-        return new SqlUpdate<T>(this.idColumn).update(this.idColumn, entity, allFields, mTableName);
+        return new SqlUpdate<T>(this.idColumn).update(new String[]{this.idColumn}, entity, allFields, mTableName);
     }
 
     protected long updateByColumnAbs(String column, T entity) {
-        return new SqlUpdate<T>(this.idColumn).update(column, entity, allFields, mTableName);
+        return new SqlUpdate<T>(this.idColumn).update(new String[]{column}, entity, allFields, mTableName);
+    }
 
+    protected long updateByColumnAbs(String[] columns, T entity) {
+        return new SqlUpdate<T>(this.idColumn).update(columns, entity, allFields, mTableName);
     }
 
 

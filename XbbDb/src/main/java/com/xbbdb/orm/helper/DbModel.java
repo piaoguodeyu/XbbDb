@@ -461,7 +461,16 @@ public class DbModel<T> extends DBImpl<T> {
             return result;
         }
     }
-
+    public long updateByColumn(String[] columns, T entity) {
+        synchronized (DbModel.this) {
+            startWritableDatabase();
+            openWriteTransaction();
+            long result = super.updateByColumnAbs(columns, entity);
+            setWriteTransactionSuccessful();
+            closeWriteDatabase();
+            return result;
+        }
+    }
     public List<Map<String, String>> queryMapList(String sql,
                                                   String[] selectionArgs) {
         startReadableDatabase();

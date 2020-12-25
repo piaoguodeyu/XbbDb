@@ -12,12 +12,12 @@ public class SqlColum {
     }
 
     public SqlColum selectAll() {
-        mSql.append("selectAll * ");
+        mSql.append("select * ");
         return this;
     }
 
     public SqlColum selectAll(String selectContent) {
-        mSql.append("selectAll ")
+        mSql.append("select ")
                 .append(selectContent).append(" ");
         return this;
     }

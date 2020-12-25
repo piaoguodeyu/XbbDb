@@ -85,7 +85,7 @@ public class SqlUpdate<T> {
     }
 
 
-    public long update(String column, Object entity, List<Field> list, String tablename) {
+    public long update(String[] colusmns, Object entity, List<Field> list, String tablename) {
         long rows = 0;
         try {
 
@@ -96,15 +96,23 @@ public class SqlUpdate<T> {
 //            String tablename = getTableNeame(entity.getClass());
             ContentValues cv = new ContentValues();
             //注意返回的sql中包含主键列
-            String sql = setContentValues(entity, cv, list);
-            String where = column + " = ?";
-            String idValues = (String) cv.get(column);
-            XbbLogUtil.i(TAG, "DBImpl: execSql: [8888888899999]=" + idValues + "  sql= " + sql);
-
-            String[] whereValue = {idValues};
-
-            rows = DbFactory.getInstance().getWriteDatabase().update(tablename, cv, where, whereValue);
-
+            setContentValues(entity, cv, list);
+            StringBuilder whereBuild = new StringBuilder();
+            String[] whereValue = new String[colusmns.length];
+            for (int i = 0; i < colusmns.length; i++) {
+                String column = colusmns[i];
+                if (i > 0) {
+                    whereBuild.append(" and ").append(column).append(" =?");
+                } else {
+                    whereBuild.append(column).append(" =?");
+                }
+                whereValue[i] = (String) cv.get(column);
+            }
+            if (XbbLogUtil.isDebug()) {
+                String sql = "update " + tablename + " set " + cv + " where " + whereBuild.toString();
+                XbbLogUtil.i(TAG, "DBImpl: sql= " + sql);
+            }
+            rows = DbFactory.getInstance().getWriteDatabase().update(tablename, cv, whereBuild.toString(), whereValue);
             //获取关联域的操作类型和关系类型
             String foreignKey = null;
             String type = null;
@@ -134,7 +142,7 @@ public class SqlUpdate<T> {
                     }
                     List<Field> fieldList = getFiled(relationsObj.getClass());
                     String tbname = getTableNeame(relationsObj.getClass());
-                    update(foreignKey, relationsObj, fieldList, tbname);
+                    update(new String[]{foreignKey}, relationsObj, fieldList, tbname);
                 } else if (RelationsType.one2many.equals(type) || RelationsType.many2many.equals(type)) {
                     //一对多关系
                     //获取关联表的对象
@@ -149,7 +157,7 @@ public class SqlUpdate<T> {
                             fieldList = getFiled(obj.getClass());
                             tbname = getTableNeame(obj.getClass());
                         }
-                        rows += update(foreignKey, obj, fieldList, tbname);
+                        rows += update(new String[]{foreignKey}, obj, fieldList, tbname);
                     }
                 }
             }
@@ -171,7 +179,7 @@ public class SqlUpdate<T> {
         try {
             if (entityList != null && entityList.size() > 0) {
                 for (Object data : entityList) {
-                    rows += update(this.idColumn, data, list, tablename);
+                    rows += update(new String[]{this.idColumn}, data, list, tablename);
                 }
             }
         } catch (Exception e) {

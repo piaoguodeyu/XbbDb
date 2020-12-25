@@ -15,6 +15,7 @@ import com.xbbdb.test.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MainActivity extends Activity {
 
@@ -23,7 +24,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        Log.e("randomUUID", "" + UUID.randomUUID().toString());
         ThreadPoolManager.submit(new Runnable() {
             @Override
             public void run() {
@@ -53,28 +54,38 @@ public class MainActivity extends Activity {
 //                    list.add(user);
 //
 //                }
-        for (int i = 1; i < 200; i++) {
-            long time = System.currentTimeMillis();
-            UserInfo user = new UserInfo();
-            user.setUserid( "100");
-            user.setName("00700.hk");
-            user.setAlipay2("00700.hk");
-            user.setWx3("00700.hk");
-            user.setMitake("00700.hk");
-            user.setPhone("00700.hk");
-            SaffInfo saff = new SaffInfo();
-            saff.setUserid(i+"");
-            saff.setAlipay("00700.hk");
-            saff.setMitake("00700.hk");
-            saff.setName("00700.hk");
-            user.setUseridStaff(saff);
-            Log.i("MainActivity", "onCreate11= " + time);
+//        for (int i = 1; i < 200; i++) {
+        long time = System.currentTimeMillis();
+        UserInfo user = new UserInfo();
+        user.setUserid("1009999999999999999999");
+        user.setName("00700.hk");
+        user.setAlipay2("00700.hk");
+        user.setWx3("00700.hk");
+        user.setMitake("00700.hk");
+        user.setPhone("17717886592");
+        SaffInfo saff = new SaffInfo();
+        saff.setUserid("*************");
+        saff.setAlipay("00700.hk");
+        saff.setMitake("00700.hk");
+        saff.setName("00700.hk");
+        user.setUseridStaff(saff);
+        Log.i("MainActivity1", "onCreate11= " + time);
 //            model.updateByColumn("userid", user);
-            list.add(user);
-        }
-        model.insertList(list);
+        list.add(user);
+        model.insert(user);
+
+
+        String[] colomns = new String[]{"userid", "phone"};
+        user.setName("哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈嘿嘿");
+        model.updateByColumn(colomns, user);
+        Log.e("MainActivity1", "onCreate11= " + model.queryList());
+
+//        }
+//        model.insertList(list);
 //                Log.d("MainActivity1", "user= " + model.queryList());
 //                Log.d("MainActivity1", "modelSaff= " + modelSaff.queryList());
 //                Log.e("MainActivity1", "onCreate11= " + (System.currentTimeMillis() - time));
     }
+
+
 }
